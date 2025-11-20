@@ -1,0 +1,62 @@
+services:
+    # PHP Service
+    php:
+        build:
+            context: .
+            target: php
+            args:
+                - APP_ENV=${APP_ENV}
+        environment:
+            - APP_ENV=${APP_ENV}
+            - CONTAINER_ROLE=app
+        working_dir: /var/www
+        volumes:
+            - ./:/var/www
+        ports:
+            - 8001:80
+        depends_on:
+            - database
+            - redis
+
+    # Database Server
+    database:
+        container_name: database
+        image: mysql:8.0
+        ports:
+            - 3307:3306
+        environment:
+            MYSQL_DATABASE: laravelDB
+            MYSQL_USER: laravel
+            MYSQL_PASSWORD: laravel
+            MYSQL_ROOT_PASSWORD: root_password
+        volumes:
+            - db-data:/var/lib/mysql
+            - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+        command: --default-authentication-plugin=mysql_native_password
+        healthcheck:
+            test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_password"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    # Redis Server
+    redis:
+        image: redis:alpine
+        command: redis-server --appendonly yes --requirepass  "${REDIS_PASSWORD}"
+        ports:
+            - 6379:6379
+
+    # Adminer - Database Management Tool
+    adminer:
+        image: adminer:latest
+        container_name: adminer
+        ports:
+            - 8081:8080
+        depends_on:
+            - database
+        restart: unless-stopped
+        environment:
+            ADMINER_DEFAULT_SERVER: database
+            ADMINER_DESIGN: brade
+volumes:
+    db-data: ~

@@ -1,0 +1,2 @@
+(function(){"use strict";document.addEventListener('DOMContentLoaded',function(){var calendarEl=document.getElementById('calendar');var calendar=new FullCalendar.Calendar(calendarEl,{locale: 'fa',
+direction: 'rtl',headerToolbar:{right:'prev,next',center:'title',left:'today'},initialDate:'2024-03-30',navLinks:true,businessHours:true,editable:true,selectable:true,events:[{title:'مهلت پروژه',start:'2024-03-03',},{title:'جلسه تیم',start:'2024-03-13',},{title:'ملاقات با مریم',start:'2024-03-18',},],});calendar.render();});})();
