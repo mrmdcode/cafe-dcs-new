@@ -1,8 +1,10 @@
 <?php
-
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -44,5 +46,41 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    public function render($request, Throwable $e)
+    {
+        // 404 Page not found
+        if ($e instanceof NotFoundHttpException) {
+            return response()->view('errors.404', [], 404);
+        }
+
+        // 403 Forbidden
+        if ($e instanceof AccessDeniedHttpException) {
+            return response()->view('errors.403', [], 403);
+        }
+
+        // HTTP exceptions (403, 404, 500, etc.)
+        if ($e instanceof HttpExceptionInterface) {
+            $statusCode = $e->getStatusCode();
+
+            if (view()->exists("errors.$statusCode")) {
+                return response()->view("errors.$statusCode", [
+                    'exception' => $e,
+                ], $statusCode);
+            }
+
+            return response()->view('errors.500', [], 500);
+        }
+
+        // Handle non-HTTP exceptions (real 500 errors)
+        if (! app()->environment('local')) {
+            return response()->view('errors.500', [
+                'exception' => $e,
+            ], 500);
+        }
+
+        // Default Laravel behavior (shows debug in local)
+        return parent::render($request, $e);
     }
 }
