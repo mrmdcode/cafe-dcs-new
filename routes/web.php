@@ -58,12 +58,13 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager'])->group(fun
     Route::apiResource('table', \App\Http\Controllers\Company\ManagerTableController::class)->names('company.table');
     Route::post('/orders/indexData/', [\App\Http\Controllers\Company\ManagerOrderController::class, 'indexData'])->name('company.order.index.data');
     Route::get('/orders/init_modal', [\App\Http\Controllers\Company\ManagerOrderController::class, 'init_modal'])->name('company.order.index.data');
+    Route::get('/orders/tables-menus', [\App\Http\Controllers\Company\ManagerOrderController::class, 'getTablesAndMenus'])->name('company.order.tables-menus');
     Route::get('/orders/edit/{id}-{unique_key}', [\App\Http\Controllers\Company\ManagerOrderController::class, 'edit'])->name('company.order.eddit');
     Route::get('/orders/view/{id}-{unique_key}', [\App\Http\Controllers\Company\ManagerOrderController::class, 'show'])->name('company.order.eddit');
     Route::post('/orders/padding/{id}-{unique_key}', [\App\Http\Controllers\Company\ManagerOrderController::class, 'paidding'])->name('company.order.eddit');
     Route::post('/orders/finishing/{id}-{unique_key}', [\App\Http\Controllers\Company\ManagerOrderController::class, 'finishing'])->name('company.order.eddit');
     Route::apiResource('/orders', \App\Http\Controllers\Company\ManagerOrderController::class)->names('company.order');
-    Route::get('/orders/{id}/{unique_key}/factor', [\App\Http\Controllers\Company\ManagerOrderController::class, 'showFactor'])->name('manager.orders.factor');
+    Route::get('/orders/{id}/{unique_key}/factor', [\App\Http\Controllers\Company\ManagerOrderController::class, 'showFactor'])->name('company.orders.factor');
 });
 Route::prefix('cashier')->middleware(['auth', 'checkCashier'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('company.cashier.dashboard');
