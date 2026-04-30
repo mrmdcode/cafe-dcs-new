@@ -1,10 +1,10 @@
 @extends('Layouts.system')
 
-@section('title', 'خطای ۴۰۴ - صفحه یافت نشد | پنل مدیریت')
+@section('title', 'خطای ۵۰۰ - خطای سرور داخلی | پنل مدیریت')
 
 @section('css')
     <style>
-        .error-404 {
+        .error-500 {
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
@@ -108,14 +108,14 @@
 @endsection
 
 @section('content')
-    <div class="error-404">
+    <div class="error-500">
         <div class="error-box">
-            <div class="error-icon">🔍</div>
-            <h1 class="error-code">۴۰۴</h1>
-            <h2 class="error-title">صفحه مورد نظر یافت نشد!</h2>
+            <div class="error-icon">⚠️</div>
+            <h1 class="error-code">۵۰۰</h1>
+            <h2 class="error-title">خطای داخلی سرور!</h2>
             <div class="error-message">
-                متأسفانه صفحه‌ای که به دنبال آن هستید وجود ندارد.<br>
-                ممکن است آدرس صفحه اشتباه وارد شده باشد یا صفحه حذف شده باشد.
+                متأسفانه خطایی در سرور رخ داده است.<br>
+                لطفاً چند دقیقه دیگر مجدداً تلاش کنید. در صورت تکرار مشکل، با پشتیبانی فنی تماس بگیرید.
             </div>
 
             <div class="d-flex gap-3 justify-content-center">
@@ -125,6 +125,10 @@
                 <a href="javascript:history.back()" class="btn-back" style="background: #48bb78;">
                     ↩️ بازگشت به صفحه قبل
                 </a>
+            </div>
+
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="جستجو در سایت...">
             </div>
         </div>
     </div>
