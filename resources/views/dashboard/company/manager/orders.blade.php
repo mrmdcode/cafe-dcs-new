@@ -27,7 +27,9 @@
             </div>
         </div>
         <div class="col-md-3">
-            <button class="btn btn-outline-success" id="openAdminOrderModal">افزودن سفارش</button>
+            <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#add_order">
+                افزودن سفارش
+            </button>
         </div>
     </div>
     <div class="row mx-1 bg-body-secondary mb-4 rounded-3 pt-3 pb-1">
@@ -228,76 +230,89 @@
         </div>
     </div>
 
-    <!-- Modal Add Orders -->
-    <div class="modal fade" id="add_order" tabindex="2" aria-labelledby="order_register_label" aria-hidden="true">
+    <!-- Modal Add Orders (Server‑side form) -->
+    <div class="modal fade" id="add_order" tabindex="-1" aria-labelledby="order_register_label" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="order_register_label">ثبت سفارش جدید</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-
-                    <!-- Customer Info -->
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <input type="text" id="customer_name" class="form-control" placeholder="نام مشتری">
+                <form method="POST" action="{{ route('company.orders.store') }}" id="orderForm">
+                    @csrf
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5">ثبت سفارش جدید</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Customer & Table (unchanged) -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <input type="text" name="customer_name" class="form-control" placeholder="نام مشتری">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="customer_phone" class="form-control"
+                                    placeholder="شماره مشتری">
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <input type="text" id="customer_phone" class="form-control" placeholder="شماره مشتری">
+                        <div class="mb-3">
+                            <select name="table_id" class="form-select">
+                                <option value="">بدون میز</option>
+                                @foreach ($tables as $table)
+                                    <option value="{{ $table->id }}">{{ $table->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <hr>
+
+                        <!-- Add item section -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <select id="menu_select" class="form-select">
+                                    <option value="">-- منو --</option>
+                                    @foreach ($menus as $menu)
+                                        <option value="{{ $menu['id'] }}">{{ $menu['name'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="item_select" class="form-select" disabled>
+                                    <option value="">ابتدا منو را انتخاب کنید</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" id="item_qty" class="form-control" value="1" min="1"
+                                    placeholder="تعداد">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" id="add_item_btn" class="btn btn-primary w-100" disabled>افزودن به
+                                    سفارش</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="item_desc" class="form-control" placeholder="توضیحات (اختیاری)">
+                        </div>
+
+                        <hr>
+
+                        <!-- Cart table -->
+                        <h6>آیتم‌های انتخاب شده</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered" id="cart_table">
+                                <thead>
+                                    <tr>
+                                        <th>آیتم</th>
+                                        <th>تعداد</th>
+                                        <th>توضیحات</th>
+                                        <th>عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart_body"></tbody>
+                            </table>
                         </div>
                     </div>
-
-                    <!-- Table Select -->
-                    <div class="form-group position-relative mb-3">
-                        <select class="form-select form-control ps-5 h-58" id="table_select">
-                            <option value="">بدون میز</option>
-                        </select>
-                        <i
-                            class="ri-map-pin-line position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-primary" id="submit_order" disabled>ثبت سفارش</button>
                     </div>
-
-                    <!-- Menu Select -->
-                    <div class="form-group position-relative mb-3">
-                        <select class="form-select form-control ps-5 h-58" id="menu_select">
-                            <option>انتخاب منو</option>
-                        </select>
-                        <i
-                            class="ri-restaurant-line position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
-                    </div>
-
-                    <!-- Menu Item Select -->
-                    <div class="form-group position-relative mb-3">
-                        <select class="form-select form-control ps-5 h-58" id="menu_item_select">
-                            <option>انتخاب آیتم</option>
-                        </select>
-                        <i
-                            class="ri-list-check position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
-                    </div>
-
-                    <!-- Quantity -->
-                    <div class="mb-3 d-flex align-items-center">
-                        <button class="btn btn-danger" id="qty_minus">-</button>
-                        <input type="number" id="item_qty" value="1" class="form-control mx-2 text-center"
-                            style="width:100px">
-                        <button class="btn btn-success" id="qty_plus">+</button>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="mb-3">
-                        <input type="text" id="item_description" class="form-control" placeholder="توضیحات">
-                    </div>
-
-                    <hr>
-
-                    <!-- Order List -->
-                    <div id="order_list"></div>
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger text-white" data-bs-dismiss="modal">بستن</button>
-                    <button type="button" class="btn btn-primary text-white" id="admin_send_btn">ثبت سفارش</button>
-                </div>
+                </form>
             </div>
         </div>
     </div>
@@ -307,7 +322,7 @@
     <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.3/dist/echo.iife.js"></script> --}}
     <script src="{{ asset('/assets/js/qz-tray.js') }}"></script>
     <script src="{{ asset('/assets/js/orders_controller.js') }}"></script>
-    <script src="{{ asset('/assets/js/manager_add_order.js') }}"></script>
+    <script src="{{ asset('/assets/js/getMenuItems.js') }}"></script>
     <script src="{{ asset('/assets/js/cashier_printers.js') }}"></script>
 @endsection
 @section('css')
