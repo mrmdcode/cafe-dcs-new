@@ -67,6 +67,8 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager'])->group(fun
     Route::apiResource('/orders', \App\Http\Controllers\Company\ManagerOrderController::class)->names('company.order');
     Route::get('/orders/{id}/{unique_key}/factor', [\App\Http\Controllers\Company\ManagerOrderController::class, 'showFactor'])->name('company.orders.factor');
     Route::post('/orders/store', [\App\Http\Controllers\Company\ManagerOrderController::class, 'store'])->name('company.orders.store');
+    Route::get('/company/template', [\App\Http\Controllers\Company\ManagerTemplateController::class, 'index'])->name('company.template');
+    Route::post('/company/template', [\App\Http\Controllers\Company\ManagerTemplateController::class, 'saveTemplate'])->name('company.template.save');
 });
 Route::prefix('cashier')->middleware(['auth', 'checkCashier'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('company.cashier.dashboard');
