@@ -6,7 +6,7 @@
     @include('dashboard.company.manager._partial._topMenu')
 @endsection
 @section('content')
-    <meta name="X-CSRF-TOKEN" content="{{csrf_token()}}"/>
+    <meta name="X-CSRF-TOKEN" content="{{ csrf_token() }}" />
     <div class="row mx-1 bg-body-secondary mb-4 rounded-3 pt-3 pb-3">
         <div class="col-md-3">
             <div class="form-group d-flex  mb-0">
@@ -26,12 +26,19 @@
                 <input type="text" class="form-control-sm text-dark ps-5 bg-light">
             </div>
         </div>
+        <div class="col-md-3">
+            <button class="btn btn-outline-success" data-bs-toggle="modal" data-bs-target="#add_order">
+                افزودن سفارش
+            </button>
+        </div>
     </div>
     <div class="row mx-1 bg-body-secondary mb-4 rounded-3 pt-3 pb-1">
         <div class="col-md-4 d-flex pb-2">
             <button class="btn btn-primary rounded-5 " id="time_today" onclick="filter_time_refresh('today')">امروز</button>
-            <button class="btn btn-outline-primary rounded-5  mx-1" id="time_yesterday" onclick="filter_time_refresh('yesterday')">دیروز</button>
-            <button class="btn btn-outline-primary rounded-5" id="time_older" onclick="filter_time_refresh('older')">قبلتر</button>
+            <button class="btn btn-outline-primary rounded-5  mx-1" id="time_yesterday"
+                onclick="filter_time_refresh('yesterday')">دیروز</button>
+            <button class="btn btn-outline-primary rounded-5" id="time_older"
+                onclick="filter_time_refresh('older')">قبلتر</button>
         </div>
 
 
@@ -58,7 +65,8 @@
         <div class="col-md-1 form-switch">
             <label class="form-check-label" for="flexSwitchCheckChecked">حساب شده .</label>
             <br>
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" onchange="filter_paid_refresh()" >
+            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked"
+                onchange="filter_paid_refresh()">
         </div>
 
     </div>
@@ -67,11 +75,11 @@
             <div class="card-body">
 
                 <h4 class="mt-0 header-title">سفارش ها </h4>
-                @if(session('success'))
-                    <div class="alert alert-success">{{session('success')}}</div>
+                @if (session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
                 @endif
-                @if(session('error'))
-                    <div class="alert alert-danger">{{session('error')}}</div>
+                @if (session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
                 @endif
 
 
@@ -80,16 +88,16 @@
                     <div class="table-responsive">
                         <table class="table table-striped mb-0 align-middle">
                             <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>نام مشتری</th>
-                                <th>شماره میز</th>
-                                <th>فاکتور</th>
-                                <th>مبلغ سفارش</th>
-                                <th>سفارش گیرنده</th>
-                                <th>وضعیت</th>
-                                <th>عملیات</th>
-                            </tr>
+                                <tr>
+                                    <th>#</th>
+                                    <th>نام مشتری</th>
+                                    <th>شماره میز</th>
+                                    <th>فاکتور</th>
+                                    <th>مبلغ سفارش</th>
+                                    <th>سفارش گیرنده</th>
+                                    <th>وضعیت</th>
+                                    <th>عملیات</th>
+                                </tr>
                             </thead>
                             <tbody id="orders">
 
@@ -107,7 +115,8 @@
 
             </div>
 
-            <div class="modal fade" id="edit_order" tabindex="2" aria-labelledby="order_register_label" aria-hidden="true">
+            <div class="modal fade" id="edit_order" tabindex="2" aria-labelledby="order_register_label"
+                aria-hidden="true">
                 <div class="modal-dialog modal-xl">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -120,8 +129,10 @@
                                     <div class="form-group mb-4">
                                         <label class="label">نام مشتری</label>
                                         <div class="form-group position-relative">
-                                            <input type="text" class="form-control text-dark ps-5 h-58" id="customer_name" name="customer_name" placeholder="نام مشتری ">
-                                            <i class="ri-user-line position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
+                                            <input type="text" class="form-control text-dark ps-5 h-58"
+                                                id="customer_name" name="customer_name" placeholder="نام مشتری ">
+                                            <i
+                                                class="ri-user-line position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -129,8 +140,10 @@
                                     <div class="form-group mb-4">
                                         <label class="label">شماره مشتری</label>
                                         <div class="form-group position-relative">
-                                            <input type="text" class="form-control text-dark ps-5 h-58" id="customer_phone" name="customer_phone" placeholder="شماره مشتری ">
-                                            <i class="ri-user-line position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
+                                            <input type="text" class="form-control text-dark ps-5 h-58"
+                                                id="customer_phone" name="customer_phone" placeholder="شماره مشتری ">
+                                            <i
+                                                class="ri-user-line position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -141,20 +154,22 @@
                             <hr>
 
                             <div class="row bg-light">
-                                <div  class="col-md-12 " style="overflow-x: auto;border-bottom: 1px solid #000;">
+                                <div class="col-md-12 " style="overflow-x: auto;border-bottom: 1px solid #000;">
                                     <div id="menus" class="row flex-row flex-nowrap">
 
                                     </div>
                                 </div>
 
-                                <div id="menu_items" style="border-left: 1px solid #000000e4;" class=" col-md-4 p-0 mw-100">
+                                <div id="menu_items" style="border-left: 1px solid #000000e4;"
+                                    class=" col-md-4 p-0 mw-100">
                                 </div>
                                 <div id="order_items" class="col-md-8" style="height: 450px;"></div>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-danger text-white" data-bs-dismiss="modal">بستن</button>
-                            <button type="button" class="btn btn-primary text-white" id="send_btn" >بروزرسانی</button>
+                            <button type="button" class="btn btn-danger text-white"
+                                data-bs-dismiss="modal">بستن</button>
+                            <button type="button" class="btn btn-primary text-white" id="send_btn">بروزرسانی</button>
                         </div>
                     </div>
                 </div>
@@ -165,7 +180,8 @@
 
 
     <!-- Modal -->
-    <div class="modal fade" id="view_order_modal" tabindex="-1" aria-labelledby="view_order_modal_label" aria-hidden="true">
+    <div class="modal fade" id="view_order_modal" tabindex="-1" aria-labelledby="view_order_modal_label"
+        aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -174,7 +190,7 @@
                 </div>
                 <div class="modal-body">
                     <table class="table table-striped table-bordered ">
-                        <thead >
+                        <thead>
                             <th>#</th>
                             <th>آیتم</th>
                             <th>تعداد</th>
@@ -193,7 +209,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-6"></div>
-                        <div class="col-md-3" >مالیات :</div>
+                        <div class="col-md-3">مالیات :</div>
                         <div class="col-md-3" id="tax"></div>
                     </div>
                     <div class="row">
@@ -206,23 +222,108 @@
                     <button type="button" class="btn btn-danger text-white" data-bs-dismiss="modal">بستن</button>
                     <button type="button" class="btn btn-danger text-white" id="delete">حذف</button>
                     <button type="button" class="btn btn-primary text-white" id="print">پرینت</button>
-                    <button type="button" class="btn btn-primary text-white" id="finish" title="ارسال به سر میر">اتمام آماده سازی</button>
+                    <button type="button" class="btn btn-primary text-white" id="finish"
+                        title="ارسال به سر میر">اتمام آماده سازی</button>
                     <button type="button" class="btn btn-primary text-white" id="paid">پرداخت</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal Add Orders (Server‑side form) -->
+    <div class="modal fade" id="add_order" tabindex="-1" aria-labelledby="order_register_label" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <form method="POST" action="{{ route('company.orders.store') }}" id="orderForm">
+                    @csrf
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5">ثبت سفارش جدید</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Customer & Table (unchanged) -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <input type="text" name="customer_name" class="form-control" placeholder="نام مشتری">
+                            </div>
+                            <div class="col-md-6">
+                                <input type="text" name="customer_phone" class="form-control"
+                                    placeholder="شماره مشتری">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <select name="table_id" class="form-select">
+                                <option value="">بدون میز</option>
+                                @foreach ($tables as $table)
+                                    <option value="{{ $table->id }}">{{ $table->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
+                        <hr>
 
+                        <!-- Add item section -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <select id="menu_select" class="form-select">
+                                    <option value="">-- منو --</option>
+                                    @foreach ($menus as $menu)
+                                        <option value="{{ $menu['id'] }}">{{ $menu['name'] }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <select id="item_select" class="form-select" disabled>
+                                    <option value="">ابتدا منو را انتخاب کنید</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" id="item_qty" class="form-control" value="1" min="1"
+                                    placeholder="تعداد">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" id="add_item_btn" class="btn btn-primary w-100" disabled>افزودن به
+                                    سفارش</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" id="item_desc" class="form-control" placeholder="توضیحات (اختیاری)">
+                        </div>
 
+                        <hr>
+
+                        <!-- Cart table -->
+                        <h6>آیتم‌های انتخاب شده</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered" id="cart_table">
+                                <thead>
+                                    <tr>
+                                        <th>آیتم</th>
+                                        <th>تعداد</th>
+                                        <th>توضیحات</th>
+                                        <th>عملیات</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cart_body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">بستن</button>
+                        <button type="submit" class="btn btn-primary" id="submit_order" disabled>ثبت سفارش</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 @section('js')
-    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.3/dist/echo.iife.js"></script>
-    <script src="{{asset('/assets/js/qz-tray.js')}}"></script>
-    <script src="{{asset('/assets/js/orders_controller.js')}}"></script>
-    <script src="{{asset('/assets/js/cashier_printers.js')}}"></script>
+    {{-- <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.3/dist/echo.iife.js"></script> --}}
+    <script src="{{ asset('/assets/js/qz-tray.js') }}"></script>
+    <script src="{{ asset('/assets/js/orders_controller.js') }}"></script>
+    <script src="{{ asset('/assets/js/getMenuItems.js') }}"></script>
+    <script src="{{ asset('/assets/js/cashier_printers.js') }}"></script>
 @endsection
 @section('css')
 @endsection

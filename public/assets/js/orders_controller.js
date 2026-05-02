@@ -33,7 +33,7 @@ const refreshPage = async () => {
                                 <th scope="row">${i +1}</th>
                                 <td>${item.customer.name}</td>
                                 <td>${item.table.id} - ${item.table.name}</td>
-                                <td><a href="/${item.id}-${item.unique_key}">${item.id}-${item.unique_key}</a></td>
+                                <td><a href="/company/orders/${item.id}/${item.unique_key}/factor" target="_blank" class="btn btn-sm btn-success text-white">فاکتور</a></td>
                                 <td>${total}</td>
                                 <td>${item.order_recipient.name} ${item.order_recipient.family}</td>
                                 <td>${item.status} </td>
