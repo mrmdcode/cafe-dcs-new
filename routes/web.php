@@ -27,7 +27,7 @@ Route::post('/subscribe_mail', function (\Illuminate\Support\Facades\Request $re
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::middleware(['active.company.subscription'])->get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::prefix('admin')->middleware(['auth', 'checkAdmin'])->group(function () {
     Route::get('/', [\App\Http\Controllers\AdminActionController::class, 'dashboard'])->name('admin.dashboard');
     Route::resource('companies', \App\Http\Controllers\AdminCompanyActionController::class);
@@ -35,7 +35,7 @@ Route::prefix('admin')->middleware(['auth', 'checkAdmin'])->group(function () {
     Route::get('companies/{company}/de_active', [\App\Http\Controllers\AdminCompanyActionController::class, 'de_active'])->name('companies.de_active');
 
 });
-Route::prefix('company')->middleware(['auth', 'checkCompanyManager'])->group(function () {
+Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.company.subscription'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Company\ManagerActionController::class, 'dashboard'])->name('company.manager.dashboard');
     Route::resource('employee', \App\Http\Controllers\Company\ManagerEmployeeController::class)->names('company.employee');
     Route::get('employee/{employee}/de_suspension', [\App\Http\Controllers\Company\ManagerEmployeeController::class, 'de_suspension'])->name('company.employee.de_suspension');
@@ -87,5 +87,16 @@ Route::prefix('order_recipient')->middleware(['auth', 'OrderRecipient'])->group(
     Route::get('/{id}', [\App\Http\Controllers\Company\OrderRecipientActionController::class, 'edit'])->name('company.order_recipient.edit');
     Route::post('/update/{id}-{unique_key}', [\App\Http\Controllers\Company\OrderRecipientActionController::class, 'update'])->name('company.order_recipient.edit');
     Route::post('/subscription_code', [\App\Http\Controllers\Company\OrderRecipientActionController::class, 'subscription_code'])->name('company.order_recipient.edit');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/subscription/required', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'showPaymentPage'])
+        ->name('subscription.required');
+
+    Route::post('/subscription/pay', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'requestPayment'])
+        ->name('subscription.pay');
+
+    Route::get('/subscription/callback', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'callback'])
+        ->name('subscription.callback');
 });
 Route::get('/{company_username}/check_order/{order_id}-{order_unique_key}', [\App\Http\Controllers\SiteLayoutsController::class, 'check_order'])->name('user.check_order');

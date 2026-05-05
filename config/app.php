@@ -196,6 +196,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         Kavenegar\Laravel\ServiceProvider::class,
+        App\Providers\SmsServiceProvider::class,
 
     ],
 

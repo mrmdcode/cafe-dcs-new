@@ -1,16 +1,15 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use SebastianBergmann\Template\Template;
 
 class Company extends Model
 {
-    use HasFactory,softDeletes;
-    protected $guarded = ['id'];
+    use HasFactory, softDeletes;
+    protected $guarded  = ['id'];
     protected $fillable = [
         'name',
         'username',
@@ -85,4 +84,15 @@ class Company extends Model
     {
         return $this->hasMany(Printer::class);
     }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(CompanySubscription::class, 'company_id');
+    }
+
+    public function active(): void
+    {
+        $this->update(['active' => true]);
+    }
+
 }
