@@ -16,9 +16,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/docker/*
 .env.docker
 docker-compose.yml
 Dockerfile
-Makefile
-
+update.bundle
