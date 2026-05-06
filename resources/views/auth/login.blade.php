@@ -31,13 +31,13 @@
                 <div class="card-body p-4">
                     <div class="form-group mb-4">
                         <label class="label">ایمیل</label>
-                        <input type="email" class="form-control h-58 @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus placeholder="mrmdcode@info.com">
+                        <input type="email" class="form-control h-58 @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus placeholder="ایمیل خود را وارد کنید">
                     </div>
                     <div class="form-group mb-0">
                         <label class="label">گذرواژه</label>
                         <div class="form-group">
                             <div class="password-wrapper position-relative">
-                                <input type="password" id="password" class="form-control h-58 text-dark" name="password" value="@password#">
+                                <input type="password" id="password" class="form-control h-58 text-dark" name="password" placeholder="رمز عبور را وارد کنید">
                                 <i style="color: #A9A9C8; font-size: 16px; left: 15px !important;" class="ri-eye-off-line password-toggle-icon translate-middle-y top-50 end-0 position-absolute" aria-hidden="true"></i>
 
                             </div>

@@ -41,8 +41,8 @@
                 </a>
             </li>
             <li class="menu-item open">
-                <a href="{{ route('companies.index') }}"
-                    class="menu-link @if (Route::current()->getName() == 'companies.index') active @endif">
+                <a href="{{ route('company.customers') }}"
+                    class="menu-link @if (Route::current()->getName() == 'company.customers') active @endif">
                     مشتریان
                 </a>
             </li>

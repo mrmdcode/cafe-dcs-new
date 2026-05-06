@@ -67,8 +67,12 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
     Route::apiResource('/orders', \App\Http\Controllers\Company\ManagerOrderController::class)->names('company.order');
     Route::get('/orders/{id}/{unique_key}/factor', [\App\Http\Controllers\Company\ManagerOrderController::class, 'showFactor'])->name('company.orders.factor');
     Route::post('/orders/store', [\App\Http\Controllers\Company\ManagerOrderController::class, 'store'])->name('company.orders.store');
-    Route::get('/company/template', [\App\Http\Controllers\Company\ManagerTemplateController::class, 'index'])->name('company.template');
-    Route::post('/company/template', [\App\Http\Controllers\Company\ManagerTemplateController::class, 'saveTemplate'])->name('company.template.save');
+    Route::get('/template', [\App\Http\Controllers\Company\ManagerTemplateController::class, 'index'])->name('company.template');
+    Route::post('/template', [\App\Http\Controllers\Company\ManagerTemplateController::class, 'saveTemplate'])->name('company.template.save');
+    Route::get('/customers', [\App\Http\Controllers\Company\ManagerCustomerController::class, 'index'])->name('company.customers');
+    Route::get('customer/{customer}/edit', [\App\Http\Controllers\Company\ManagerCustomerController::class, 'edit'])->name('company.customer.edit');
+    Route::get('customer/{customer}/orders', [\App\Http\Controllers\Company\ManagerCustomerController::class, 'orders'])->name('company.customer.orders');
+    Route::put('customer/{customer}', [\App\Http\Controllers\Company\ManagerCustomerController::class, 'update'])->name('company.customer.update');
 });
 Route::prefix('cashier')->middleware(['auth', 'checkCashier'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('company.cashier.dashboard');
