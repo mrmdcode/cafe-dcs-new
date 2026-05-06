@@ -53,7 +53,7 @@
                 </a>
             </li>
             <li class="menu-item open">
-                <a href="{{ route('companies.index') }}"
+                <a href="{{ route('company.financial') }}"
                     class="menu-link @if (Route::current()->getName() == 'companies.index') active @endif">
                     گزارشات مالی
                 </a>

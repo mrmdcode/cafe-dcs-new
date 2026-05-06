@@ -73,6 +73,7 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
     Route::get('customer/{customer}/edit', [\App\Http\Controllers\Company\ManagerCustomerController::class, 'edit'])->name('company.customer.edit');
     Route::get('customer/{customer}/orders', [\App\Http\Controllers\Company\ManagerCustomerController::class, 'orders'])->name('company.customer.orders');
     Route::put('customer/{customer}', [\App\Http\Controllers\Company\ManagerCustomerController::class, 'update'])->name('company.customer.update');
+    Route::get('/financial', [\App\Http\Controllers\Company\ManagerFinancialReportController::class, 'index'])->name('company.financial');
 });
 Route::prefix('cashier')->middleware(['auth', 'checkCashier'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('company.cashier.dashboard');
