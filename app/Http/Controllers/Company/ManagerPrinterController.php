@@ -1,10 +1,12 @@
 <?php
-
 namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
 use App\Models\Printer;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class ManagerPrinterController extends Controller
 {
@@ -13,100 +15,122 @@ class ManagerPrinterController extends Controller
      */
     public function index()
     {
-        $printers = Printer::where('company_id',auth()->user()->company_id)->get();
-        $is_update = [];
-        return view('dashboard.company.manager.printers',compact('printers','is_update'));
+        $printers  = Printer::where('company_id', auth()->user()->company_id)->get();
+        return view('dashboard.company.manager.printers', compact('printers'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        Printer::create([
-            'company_id'=>auth()->user()->company_id,
-            'name'=>$request->input('name'),
-            'local_address'=>$request->input('local_address'),
-            'cashier'=>$request->input('cashier')
+        $validator = Validator::make($request->all(), [
+            'name'          => 'required|string|max:255',
+            'local_address' => 'required|string|max:255',
+            'cashier'       => 'required|boolean',
         ]);
-        session()->flash('status','success');
-        session()->flash('message','پیرنتر با موفقیت ایجاد شد.');
-        return redirect()->route('company.printer.index');
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $printer = Printer::create([
+            'company_id'    => auth()->user()->company_id,
+            'name'          => $request->name,
+            'local_address' => $request->local_address,
+            'cashier'       => $request->cashier,
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'پرینتر با موفقیت ایجاد شد.',
+            'printer' => $printer, // optionally return the new data to append to table via JS
+        ]);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Printer $printer)
     {
-        $printer = Printer::where('id',$id)->first();
-        if (is_null($printer)){
-            session()->flash('status','error');
-            session()->flash('message','پرینتر وجود ندارد به پشتیبانی اطلاع دهید .');
-            return redirect()->route('company.printer.index');
-        }
-        if ($printer->company_id != auth()->user()->company_id){
-            session()->flash('status','error');
-            session()->flash('message','در سیستم خطا به وجود آمده ، به پشتیبانی اطلاع دهید .');
-            return redirect()->route('company.printer.index');
-        }
-        $printers = Printer::where('company_id',auth()->user()->company_id)->get();
-        $is_update = $printer;
-
-        return view('dashboard.company.manager.printers',compact('printers','is_update'));
+        return view('dashboard.company.manager.printers', compact('printer'));
 
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Printer $printer): JsonResponse
     {
-        $printer = Printer::where('id',$id)->first();
-        if (is_null($printer)){
-            session()->flash('status','error');
-            session()->flash('message','پرینتر وجود ندارد به پشتیبانی اطلاع دهید .');
-            return redirect()->route('company.printer.index');
-        }
-        if ($printer->company_id != auth()->user()->company_id){
-            session()->flash('status','error');
-            session()->flash('message','در سیستم خطا به وجود آمده ، به پشتیبانی اطلاع دهید .');
-            return redirect()->route('company.printer.index');
-        }
-        $printer->name = $request->input('name');
-        $printer->local_address = $request->input('local_address');
-        $printer->cashier = $request->input('cashier');
-        $printer->update();
-        session()->flash('status','success');
-        session()->flash('message','پرینتر با موفقیت ویرایش شد .');
-        return redirect()->route('company.printer.index');
+        $validator = Validator::make($request->all(), [
+            'name'          => 'required|string|max:255',
+            'local_address' => 'required|string|max:255',
+            'cashier'       => 'required|boolean',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'error',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $printer->update($request->only(['name', 'local_address', 'cashier']));
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'پرینتر با موفقیت ویرایش شد.',
+            'printer' => $printer,
+        ]);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Printer $printer)
     {
-        $printer = Printer::where('id',$id)->first();
-        if (is_null($printer)){
-            session()->flash('status','error');
-            session()->flash('message','پرینتر وجود ندارد به پشتیبانی اطلاع دهید .');
-            return redirect()->route('company.printer.index');
-        }
-        if ($printer->company_id != auth()->user()->company_id){
-            session()->flash('status','error');
-            session()->flash('message','در سیستم خطا به وجود آمده ، به پشتیبانی اطلاع دهید .');
-            return redirect()->route('company.printer.index');
-        }
-        if ($printer->MenuItem()->count() >= 1){
-            session()->flash('status','error');
-            session()->flash('message',' آیتم های خط آشپرخانه را از به پرینتر دیگری منتقل کرده و سپس مجدد امتحان کنید .');
-            return redirect()->route('company.printer.index');
-        }
         $printer->delete();
-        session()->flash('status','success');
-        session()->flash('message','پرینتر با موفقیت حذف شد .');
+        return $this->redirectWithStatus('success', 'پرینتر با موفقیت حذف شد.');
+    }
+
+    /**
+     * Redirect to printer index with flash message.
+     */
+    private function redirectWithStatus(string $status, string $message): RedirectResponse
+    {
+        session()->flash('status', $status);
+        session()->flash('message', $message);
+
         return redirect()->route('company.printer.index');
+    }
+
+    public function getCashierPrinter()
+    {
+        $printer = Printer::where('company_id', auth()->user()->company_id)
+            ->where('cashier', true)
+            ->first();
+
+        return response()->json([
+            'printer' => $printer ? $printer->local_address : null, // system printer name, e.g. 'EPSON TM-T88V'
+        ]);
+    }
+
+    // public function downloadPrivateKey()
+    // {
+    //     // Path to your private key file (store it outside public/)
+    //     $filePath = storage_path('app/qz-tray/private.key');
+    //     if (! file_exists($filePath)) {
+    //         abort(404, 'Private key not found. Please contact support.');
+    //     }
+    //     return response()->download($filePath, 'private.key');
+    // }
+
+    public function certificate()
+    {
+        $cert = file_get_contents(storage_path('app/qz-tray/certificate.pem'));
+        return response($cert)->header('Content-Type', 'text/plain');
     }
 }

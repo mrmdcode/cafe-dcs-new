@@ -6,167 +6,243 @@
     @include('dashboard.company.manager._partial._topMenu')
 @endsection
 @section('content')
+<div class="container-fluid">
     <div class="row justify-content-center">
-        <div class="@if(session('status') == 'success')alert alert-success @elseif(session('status') == 'error')alert alert-danger @endif col-11">
-            <div class="alert-body ">{{session('message')}}</div>
-        </div>
+        <div class="col-11">
+            <!-- Flash messages (only shown after delete redirect) -->
+            @if(session('status'))
+            <div class="alert alert-{{ session('status') == 'success' ? 'success' : 'danger' }} alert-dismissible fade show">
+                {{ session('message') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            @endif
 
-        <div class="col-9">
             <div class="card">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h4>پرینتر ها</h4>
+                    <div>
+                        {{-- <a href="{{ route('company.printer.private_key') }}" class="btn btn-outline-info btn-sm">
+                            <i class="ri-download-2-line"></i> دانلود کلید خصوصی
+                        </a> --}}
+                        <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#printerModal" onclick="resetForm()">
+                            <i class="ri-add-line"></i> افزودن پرینتر
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <table class="table bg-white table-hover table-striped table-bordered">
-                        <thead class="">
-                        <th>#</th>
-                        <th>نام</th>
-                        <th>آدرس داخلی</th>
-                        <th>صندوق</th>
-                        <th>#</th>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>نام</th>
+                                <th>آدرس داخلی</th>
+                                <th>صندوق</th>
+                                <th>عملیات</th>
+                            </tr>
                         </thead>
                         <tbody>
-                        @php @endphp
-                        @forelse($printers as $i =>$item )
-                            <tr class=" text-center">
-                                <td>{{$i+1}}</td>
-                                <td>{{$item->name}}</td>
-                                <td>{{$item->local_address}}</td>
-                                <td>
-                                    @if($item->cashier)
-                                    ✅
-                                    @else
-                                        ❌
-                                    @endif
-                                </td>
-
-                            <td>
-
-                                <button  onclick="$('#fmd_{{$item->id}}').submit()" class="btn btn-outline-danger">حذف</button>
-                                <a href="{{route('company.printer.show',$item->id)}}" class="btn btn-outline-danger">ویرایش</a>
-                            </td>
-
-                                <form action="{{route('company.printer.destroy',$item->id)}}" method="post" id="fmd_{{$item->id}}">
-                                    @csrf
-                                    @method('delete')
-                                </form>
-
-                            </tr>
-                        @empty
-                            <tr>
-                                <td  class="d-flex justify-content-center">هیچ پرینتری ثبت نشده</td>
-                            </tr>
-                        @endforelse
+                            @forelse($printers as $i => $printer)
+                                <tr>
+                                    <td>{{ $i+1 }}</td>
+                                    <td>{{ $printer->name }}</td>
+                                    <td><code>{{ $printer->local_address }}</code></td>
+                                    <td>{!! $printer->cashier ? '✅' : '❌' !!}</td>
+                                    <td>
+                                        <button class="btn btn-outline-primary btn-sm edit-btn"
+                                                data-id="{{ $printer->id }}"
+                                                data-name="{{ $printer->name }}"
+                                                data-local_address="{{ $printer->local_address }}"
+                                                data-cashier="{{ $printer->cashier }}"
+                                                data-bs-toggle="modal" data-bs-target="#printerModal">
+                                            ویرایش
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ $printer->id }})">
+                                            حذف
+                                        </button>
+                                        <form id="delete-form-{{ $printer->id }}" action="{{ route('company.printer.destroy', $printer->id) }}" method="POST" style="display: none;">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center">هیچ پرینتری ثبت نشده</td>
+                                </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3">
-            <form @if($is_update) action="{{route('company.printer.update',$is_update->id)}}" @else action="{{route('company.printer.store')}}" @endif method="post" class="card">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h4>پرینتر ها</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        @csrf
-                        <div class="col-md-12">
-                            <div class="form-group mb-4">
-                                <label class="label">نام</label>
-                                <div class="form-group position-relative">
-                                    <input type="text" class="form-control text-dark ps-5 h-58" id="name" name="name" @if(!empty($is_update)) value="{{$is_update->name}}"@endif placeholder="نام ">
-                                    <i class="ri-user-line position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group mb-4">
-                                <label class="label">آدرس داخلی</label>
-                                <div class="form-group position-relative">
-                                    <input type="text" class="form-control text-dark ps-5 h-58" id="local_address" name="local_address" @if(!empty($is_update))  value="{{$is_update->local_address}}" @endif placeholder="آدرس داخلی ">
-                                    <i class="ri-user-line position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-12">
-                            <div class="form-group mb-4">
-                                <label class="label">صندوق</label>
-                                <div class="form-group position-relative">
-                                    <select class="form-select form-control ps-5 h-58" name="cashier" id="cashier" aria-label="Default select example">
-                                       @if(!empty($is_update))
-                                            @if($is_update->cashier)
-                                                <option value="1" selected class="text-dark">صندوق</option>
-                                                <option value="0" class="text-dark">سایر</option>
-                                            @else
-                                                <option value="1" class="text-dark">صندوق</option>
-                                                <option value="0" selected class="text-dark">سایر</option>
-                                            @endif
-                                        @else
-                                            <option value="1" class="text-dark">صندوق</option>
-                                            <option value="0" selected class="text-dark">سایر</option>
-                                       @endif
-                                    </select>
-                                    <i class="ri-font-size position-absolute top-50 start-0 translate-middle-y fs-20 text-gray-light ps-20"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            @if($is_update)
-                                @method('put')
-                            <button class="btn btn-primary btn-block">ویرایش</button>
-                            @else
-                            <button class="btn btn-success btn-block">ثبت</button>
 
-                            @endif
-                        </div>
+            <!-- Small note about private key -->
+            {{-- <div class="card bg-white border-0 mt-3">
+                <div class="card-body p-3">
+                    <i class="ri-information-line"></i>
+                    کلید خصوصی QZ Tray را در مسیر نصب نرم‌افزار QZ Tray قرار دهید و برنامه را مجدداً راه‌اندازی کنید.
+                </div>
+            </div> --}}
+        </div>
+    </div>
+</div>
+
+<!-- Create / Edit Modal -->
+<div class="modal fade" id="printerModal" tabindex="-1" aria-labelledby="printerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form id="printerForm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="printerModalLabel">افزودن پرینتر</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="_method" id="formMethod" value="POST">
+                    <input type="hidden" id="printerId" name="printer_id" value="">
+
+                    <div class="mb-3">
+                        <label class="form-label">نام</label>
+                        <input type="text" class="form-control" id="printerName" name="name" required>
+                        <div class="invalid-feedback" id="error-name"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">آدرس داخلی (System Name in QZ Tray)</label>
+                        <input type="text" class="form-control" id="printerAddress" name="local_address" required>
+                        <div class="invalid-feedback" id="error-local_address"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">صندوق</label>
+                        <select class="form-select" id="printerCashier" name="cashier" required>
+                            <option value="1">صندوق</option>
+                            <option value="0">سایر</option>
+                        </select>
                     </div>
                 </div>
-            </form>
-        </div>
-    </div>
-
-
-    <div class="row mt-2">
-        <div class=""></div>
-        <div class="card col-9 bg-white border-0 rounded-10 mb-4">
-            <div class="card-body p-4">
-                <h3 class="fs-18 mb-4 border-bottom pb-20 mb-20">متا دیتا</h3>
-                دانلود کلید اختصاصی (private key) برای نرم افزار QZ Tray و اتصال به پرینتر ها
-                <br>
-                <a href="#" class="btn btn-success mt-4 text-white">دانلود</a>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">انصراف</button>
+                    <button type="submit" class="btn btn-primary" id="saveButton">ذخیره</button>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
-
-
-
-    @include('dashboard.company.manager._partial._employee_create')
-    @include('dashboard.company.manager._partial._employee_show')
-
-
+</div>
 @endsection
+
 @section('js')
-    <script>
-        const btn_delete = (id) => {
-            console.log(id)
-            Swal.fire({
-                title: "آیا مایل به حذف کافه هستید .",
-                text: "بعد از حذف دیگر به محتوای کافه دسترسی ندارید .",
-                icon: "warning",
-                showCancelButton: true,
-                confirmButtonColor: "#3085d6",
-                cancelButtonColor: "#d33",
-                confirmButtonText: "بله ،حذف شود ."
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $(`#form_${id}`).submit();
+<script>
+    // Reset form for create mode
+    function resetForm() {
+        $('#printerModalLabel').text('افزودن پرینتر');
+        $('#formMethod').val('POST');
+        $('#printerId').val('');
+        $('#printerName').val('').removeClass('is-invalid');
+        $('#printerAddress').val('').removeClass('is-invalid');
+        $('#printerCashier').val('1');
+        $('.invalid-feedback').text('');
+        $('#saveButton').text('ایجاد');
+    }
+
+    // Populate form for edit mode using data attributes
+    $('.edit-btn').on('click', function() {
+        const id = $(this).data('id');
+        const name = $(this).data('name');
+        const address = $(this).data('local_address');
+        const cashier = $(this).data('cashier');
+
+        $('#printerModalLabel').text('ویرایش پرینتر');
+        $('#formMethod').val('PUT');
+        $('#printerId').val(id);
+        $('#printerName').val(name).removeClass('is-invalid');
+        $('#printerAddress').val(address).removeClass('is-invalid');
+        $('#printerCashier').val(cashier);
+        $('.invalid-feedback').text('');
+        $('#saveButton').text('بروزرسانی');
+    });
+
+    // Handle AJAX form submission
+    $('#printerForm').on('submit', function(e) {
+        e.preventDefault();
+
+        let url, method;
+        const printerId = $('#printerId').val();
+        if (!printerId) {
+            // Create
+            url = '{{ route('company.printer.store') }}';
+            method = 'POST';
+        } else {
+            // Update
+            url = '{{ route('company.printer.update', '') }}/' + printerId;
+            method = 'PUT';
+        }
+
+        const formData = {
+            name: $('#printerName').val(),
+            local_address: $('#printerAddress').val(),
+            cashier: $('#printerCashier').val(),
+            _token: $('input[name="_token"]').val(),
+        };
+
+        $.ajax({
+            url: url,
+            method: method,
+            data: formData,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Show success message and reload page
+                Swal.fire({
+                    icon: 'success',
+                    title: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            },
+            error: function(xhr) {
+                if (xhr.status === 422) {
+                    const errors = xhr.responseJSON.errors;
+                    // Clear previous errors
+                    $('.invalid-feedback').text('');
+                    $('.form-control').removeClass('is-invalid');
+
+                    // Display validation errors
+                    if (errors.name) {
+                        $('#printerName').addClass('is-invalid');
+                        $('#error-name').text(errors.name[0]);
+                    }
+                    if (errors.local_address) {
+                        $('#printerAddress').addClass('is-invalid');
+                        $('#error-local_address').text(errors.local_address[0]);
+                    }
+                } else {
                     Swal.fire({
-                        title: "حذف شد!",
-                        text: "کافه در حالت حذف و غیرفعال قرارگرفت.",
-                        icon: "success"
+                        icon: 'error',
+                        title: 'خطا',
+                        text: 'مشکلی پیش آمد. لطفاً دوباره تلاش کنید.'
                     });
                 }
-            });
-        }
-    </script>
+            }
+        });
+    });
+
+    // Delete confirmation
+    function confirmDelete(printerId) {
+        Swal.fire({
+            title: "آیا از حذف پرینتر اطمینان دارید؟",
+            text: "این عملیات قابل بازگشت نیست.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "بله، حذف شود",
+            cancelButtonText: "انصراف"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + printerId).submit();
+            }
+        });
+    }
+</script>
 @endsection

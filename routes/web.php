@@ -55,7 +55,14 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
     Route::get('menu_item/{menu_item}/sc_show', [\App\Http\Controllers\Company\ManagerMenuItemController::class, 'sc_show'])->name('company.menu_item.sc_show');
     Route::get('menu_item/{menu_item}/de_active', [\App\Http\Controllers\Company\ManagerMenuItemController::class, 'de_active'])->name('company.menu_item.de_active');
     Route::get('menu_item/{menu_item}/active', [\App\Http\Controllers\Company\ManagerMenuItemController::class, 'active'])->name('company.menu_item.active');
-    Route::apiResource('printer', \App\Http\Controllers\Company\ManagerPrinterController::class)->names('company.printer');
+    // Route::apiResource('printer', \App\Http\Controllers\Company\ManagerPrinterController::class)->names('company.printer');
+    Route::get('/printers', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'index'])->name('company.printer.index');
+    Route::post('/printers', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'store'])->name('company.printer.store');
+    Route::put('/printers/{printer}', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'update'])->name('company.printer.update');
+    Route::delete('/printers/{printer}', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'destroy'])->name('company.printer.destroy');
+    Route::get('/printer/cashier-data', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'getCashierPrinter'])->name('company.printer.cashier.data');
+    // Route::get('/printer/private-key', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'downloadPrivateKey'])->name('company.printer.private_key');
+    Route::get('/printer/certificate', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'certificate'])->name('company.printer.certificate');
     Route::apiResource('table', \App\Http\Controllers\Company\ManagerTableController::class)->names('company.table');
     Route::post('/orders/indexData/', [\App\Http\Controllers\Company\ManagerOrderController::class, 'indexData'])->name('company.order.index.data');
     Route::get('/orders/init_modal', [\App\Http\Controllers\Company\ManagerOrderController::class, 'init_modal'])->name('company.order.index.data');
