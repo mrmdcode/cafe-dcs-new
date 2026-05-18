@@ -15,7 +15,7 @@
                 </a>
             </li>
             <li class="menu-item open">
-                <a href="{{route('company.cashier.order.index')}}" class="menu-link @if(Route::current()->getName() =="company.employee.index") active @endif">
+                <a href="{{route('company.cashier.orders.index')}}" class="menu-link @if(Route::current()->getName() =="company.employee.index") active @endif">
                     سفارشات
                 </a>
             </li>

@@ -82,15 +82,13 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
     Route::put('customer/{customer}', [\App\Http\Controllers\Company\ManagerCustomerController::class, 'update'])->name('company.customer.update');
     Route::get('/financial', [\App\Http\Controllers\Company\ManagerFinancialReportController::class, 'index'])->name('company.financial');
 });
-Route::prefix('cashier')->middleware(['auth', 'checkCashier'])->group(function () {
-    Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('company.cashier.dashboard');
-    Route::post('/orders/indexData/', [\App\Http\Controllers\Company\CashierOrderController::class, 'indexData'])->name('company.cashier.order.index.data');
-    Route::get('/orders/init_modal', [\App\Http\Controllers\Company\CashierOrderController::class, 'init_modal'])->name('company.cashier.order.index.data');
-    Route::get('/orders/edit/{id}-{unique_key}', [\App\Http\Controllers\Company\CashierOrderController::class, 'edit'])->name('company.cashier.order.eddit');
-    Route::get('/orders/view/{id}-{unique_key}', [\App\Http\Controllers\Company\CashierOrderController::class, 'show'])->name('company.cashier.order.eddit');
-    Route::post('/orders/padding/{id}-{unique_key}', [\App\Http\Controllers\Company\CashierOrderController::class, 'paidding'])->name('company.cashier.order.eddit');
-    Route::post('/orders/finishing/{id}-{unique_key}', [\App\Http\Controllers\Company\CashierOrderController::class, 'finishing'])->name('company.cashier.order.eddit');
-    Route::apiResource('/orders', \App\Http\Controllers\Company\CashierOrderController::class)->names('company.cashier.order');
+Route::prefix('cashier')->name('company.')->middleware(['auth', 'checkCashier'])->group(function () {
+     Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('cashier.dashboard');
+    Route::get('/orders', [\App\Http\Controllers\Company\CashierOrderController::class, 'index'])->name('cashier.orders.index');
+    Route::get('/orders/{order}', [\App\Http\Controllers\Company\CashierOrderController::class, 'show'])->name('cashier.orders.show');
+    Route::get('/orders/{order}/edit', [\App\Http\Controllers\Company\CashierOrderController::class, 'edit'])->name('cashier.orders.edit');
+    Route::patch('/orders/{order}/update', [\App\Http\Controllers\Company\CashierOrderController::class, 'update'])->name('cashier.orders.update');
+    Route::patch('/orders/{order}/status',[\App\Http\Controllers\Company\CashierOrderController::class, 'updateStatus'])->name('cashier.orders.status');
 });
 Route::prefix('order_recipient')->middleware(['auth', 'OrderRecipient'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Company\OrderRecipientActionController::class, 'dashboard'])->name('company.order_recipient.dashboard');
