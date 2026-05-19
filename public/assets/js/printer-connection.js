@@ -5,7 +5,11 @@
 
     // Certificate
     qz.security.setCertificatePromise(function (resolve, reject) {
-        fetch('/cashier/printer/certificate', { cache: 'no-store' })
+        fetch('api/printer/certificate', {
+            cache: 'no-store',
+            credentials: 'include',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="x-csrf-token"]').content }
+        })
             .then(function (r) { return r.ok ? r.text() : Promise.reject('cert fetch failed'); })
             .then(resolve)
             .catch(reject);
@@ -195,7 +199,7 @@
         changePrinter: changePrinter,
     };
 
-    //  Auto-connect on page load (silent, no picker yet) 
+    //  Auto-connect on page load (silent, no picker yet)
     document.addEventListener('DOMContentLoaded', function () {
         connect().catch(function (e) {
             console.warn('[QZPrinter]', e);

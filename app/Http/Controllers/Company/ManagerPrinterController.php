@@ -106,31 +106,4 @@ class ManagerPrinterController extends Controller
 
         return redirect()->route('company.printer.index');
     }
-
-    public function getCashierPrinter()
-    {
-        $printer = Printer::where('company_id', auth()->user()->company_id)
-            ->where('cashier', true)
-            ->first();
-
-        return response()->json([
-            'printer' => $printer ? $printer->local_address : null, // system printer name, e.g. 'EPSON TM-T88V'
-        ]);
-    }
-
-    // public function downloadPrivateKey()
-    // {
-    //     // Path to your private key file (store it outside public/)
-    //     $filePath = storage_path('app/qz-tray/private.key');
-    //     if (! file_exists($filePath)) {
-    //         abort(404, 'Private key not found. Please contact support.');
-    //     }
-    //     return response()->download($filePath, 'private.key');
-    // }
-
-    public function certificate()
-    {
-        $cert = file_get_contents(storage_path('app/qz-tray/certificate.pem'));
-        return response($cert)->header('Content-Type', 'text/plain');
-    }
 }

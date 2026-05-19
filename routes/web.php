@@ -60,9 +60,7 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
     Route::post('/printers', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'store'])->name('company.printer.store');
     Route::put('/printers/{printer}', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'update'])->name('company.printer.update');
     Route::delete('/printers/{printer}', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'destroy'])->name('company.printer.destroy');
-    Route::get('/printer/cashier-data', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'getCashierPrinter'])->name('company.printer.cashier.data');
-    // Route::get('/printer/private-key', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'downloadPrivateKey'])->name('company.printer.private_key');
-    Route::get('/printer/certificate', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'certificate'])->name('company.printer.certificate');
+   
     Route::apiResource('table', \App\Http\Controllers\Company\ManagerTableController::class)->names('company.table');
     Route::post('/orders/indexData/', [\App\Http\Controllers\Company\ManagerOrderController::class, 'indexData'])->name('company.order.index.data');
     Route::get('/orders/init_modal', [\App\Http\Controllers\Company\ManagerOrderController::class, 'init_modal'])->name('company.order.index.data');
@@ -85,7 +83,6 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
 Route::prefix('cashier')->name('company.')->middleware(['auth', 'checkCashier'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('cashier.dashboard');
     Route::get('/orders', [\App\Http\Controllers\Company\CashierOrderController::class, 'index'])->name('cashier.orders.index');
-    Route::get('/orders/{order}', [\App\Http\Controllers\Company\CashierOrderController::class, 'show'])->name('cashier.orders.show');
     Route::get('/orders/{order}/edit', [\App\Http\Controllers\Company\CashierOrderController::class, 'edit'])->name('cashier.orders.edit');
     Route::patch('/orders/{order}/update', [\App\Http\Controllers\Company\CashierOrderController::class, 'update'])->name('cashier.orders.update');
     Route::patch('/orders/{order}/status', [\App\Http\Controllers\Company\CashierOrderController::class, 'updateStatus'])->name('cashier.orders.status');

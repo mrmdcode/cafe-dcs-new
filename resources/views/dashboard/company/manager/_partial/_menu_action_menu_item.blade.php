@@ -73,7 +73,7 @@
                         <img src="{{asset('storage/'.$item->image)}}" height="100px" width="350px" alt="{{$item->name}}">
                     </td>
                     <td>{{$item->rost_time}}</td>
-                    <td>{{$item->printer->name}}</td>
+                    <td>{{$item->printer->name ?? null}}</td>
                     <td >
                         <div class="row px-2">
                             <button tas-view="{{route('company.menu_item.show',$item->id)}}" tas-update="{{route('company.menu_item.update',$item->id)}}" onclick="view_menu_item(this.getAttribute('tas-view'),this.getAttribute('tas-update'))" class="btn col btn-outline-primary">نمایش</button>

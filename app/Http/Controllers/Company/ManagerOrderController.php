@@ -1,146 +1,126 @@
 <?php
 namespace App\Http\Controllers\Company;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\MenuItem;
 use App\Models\Order;
+use App\Models\Table;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Enum;
 
 class ManagerOrderController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $company = Company::find(Auth::user()->company_id);
-        $menus   = $company->Menu()
-            ->with('MenuItem')
-            ->get()
-            ->map(function ($menu) {
-                return [
-                    'id'        => $menu->id,
-                    'name'      => $menu->name,
-                    'menu_item' => $menu->MenuItem,
-                ];
-            });
+        $user = auth()->user();
 
-        $tables = $company->Table()
-            ->with(['orders' => function ($q) {
-                $q->where(function ($query) {
-                    $query->where('status', 'registration')
-                        ->orWhere('status', 'edit');
-                })
-                    ->where('created_at', '>', Carbon::now()->subHours(2))
-                    ->orderByDesc('created_at');
-            }])->get();
+        $company = Company::query()
+            ->with([
+                'Menu.MenuItem',
+                'Table.orders' => function ($query) {
+                    $query->whereIn('status', ['registration', 'edit'])
+                        ->where('created_at', '>', now()->subHours(2))
+                        ->latest();
+                },
+            ])
+            ->findOrFail($user->company_id);
 
-        $tables->each(function ($table) {
-            $table->orders = $table->orders->first();
+        $orders = Order::query()
+            ->withTrashed()
+            ->with([
+                'table',
+                'customer',
+                'order_recipient',
+                'menu_item' => fn($query) => $query->withTrashed(),
+            ])
+            ->where('company_id', $user->company_id)
+
+        // Search filters
+            ->searchCustomer($request->customer_name)
+            ->searchLocation($request->location)
+            ->searchInvoice($request->invoice)
+
+        // Date filters
+            ->when(
+                $request->filled('date_from') || $request->filled('date_to'),
+                function ($query) use ($request) {
+                    $query->dateFrom($request->date_from)
+                        ->dateTo($request->date_to);
+                },
+                function ($query) use ($request) {
+                    $query
+                        ->when($request->filled('today'), fn($q) => $q->today())
+                        ->when($request->filled('yesterday'), fn($q) => $q->yesterday())
+                        ->when($request->filled('older'), fn($q) => $q->older());
+                }
+            )
+
+        // Status filters
+            ->when($request->filled('paid'), fn($query) => $query->statusPaid())
+
+            ->latest()
+            ->paginate(50);
+
+        $menus = $company->Menu->map(fn($menu) => [
+            'id'        => $menu->id,
+            'name'      => $menu->name,
+            'menu_item' => $menu->MenuItem,
+        ]);
+
+        $tables = $company->Table->map(function ($table) {
+            $table->setRelation(
+                'orders',
+                $table->orders->first()
+            );
+
+            return $table;
         });
 
-        return view('dashboard.company.manager.orders', compact('tables', 'menus'));
+        return view('dashboard.company.manager.orders', [
+            'orders' => $orders,
+            'tables' => $tables,
+            'menus'  => $menus,
+        ]);
     }
 
     /**
-     * Fetch orders based on date filters.
+     * Show order details for the view modal (JSON).
      */
-    public function indexData(Request $request)
+    public function show(Order $order): JsonResponse
     {
-        $companyId = Auth::user()->company_id;
-        $query     = Order::withTrashed()
-            ->where('company_id', $companyId)
-            ->with(['table', 'customer', 'order_recipient', 'menu_item' => function ($q) {
-                $q->withTrashed();
-            }]);
+        $order->load(['table', 'customer', 'order_recipient', 'menu_item' => fn($q) => $q->withTrashed()]);
 
-        if ($request->input('today')) {
-            $query->where('created_at', '>', Carbon::today());
-        } elseif ($request->input('yesterday')) {
-            $query->whereBetween('created_at', [Carbon::yesterday(), Carbon::today()]);
-        } elseif ($request->input('older')) {
-            $query->where('created_at', '<', Carbon::yesterday());
-        }
-
-        $data = $query->get();
-
-        if ($request->input('paid')) {
-            $data = $data->filter(function ($order) {
-                return ! in_array($order->status, ['registration', 'cancelled', 'edit']);
-            })->values();
-        }
-
-        return response()->json($data);
+        return response()->json($order);
     }
-
-    public function init_modal()
-    {
-        $company = Company::where('id', auth()->user()->company_id)->first();
-        $menus   = $company->Menu()->with('MenuItem')->get();
-        return response()->json(compact('menus'));
-    }
-    /**
-     * Get tables and menus for the admin order modal.
-     */
-    // public function getTablesAndMenus()
-    // {
-    //     $companyId = Auth::user()->company_id;
-    //     $company   = Company::find($companyId);
-
-    //     // Get all menus with their items
-    //     $menus = $company->Menu()
-    //         ->with('MenuItem')
-    //         ->get()
-    //         ->map(function ($menu) {
-    //             return [
-    //                 'id'        => $menu->id,
-    //                 'name'      => $menu->name,
-    //                 'menu_item' => $menu->MenuItem,
-    //             ];
-    //         });
-
-    //     // Get all tables, and attach the most recent incomplete order (registration or edit) created within last 2 hours
-    //     $tables = $company->Table()->with(['orders' => function ($query) {
-    //         $query->where(function ($q) {
-    //             $q->where('status', 'registration')
-    //                 ->orWhere('status', 'edit');
-    //         })
-    //             ->where('created_at', '>', Carbon::now()->subHours(2))
-    //             ->orderByDesc('created_at');
-    //     }])->get();
-
-    //     // Keep only the first (most recent) matching order per table
-    //     $tables->each(function ($table) {
-    //         $table->orders = $table->orders->first();
-    //     });
-
-    //     return response()->json(compact('tables', 'menus'));
-    // }
 
     /**
-     * Display the specified resource.
+     * Show order data for the edit modal (JSON).
+     * You can reuse the same structure as show, or add extra data (e.g. menus).
      */
-    public function show(string $id, string $unique_key)
+    public function edit(Order $order)
     {
-        $data = Order::withTrashed()
-            ->where('id', $id)
-            ->where('unique_key', $unique_key)
-            ->where('company_id', auth()->user()->company_id)
-            ->with(['table', 'customer', 'order_recipient', 'menu_item' => function ($query) {
-                $query->withTrashed();
-            }])->firstOrFail();
+        // Load relationships needed for the form
+        $order->loadMissing([
+            'customer',
+            'table',
+            'menu_item' => fn($q) => $q->withTrashed(),
+        ]);
 
-        return response()->json($data);
-    }
+        $company = Company::with('Menu.MenuItem')->findOrFail(auth()->user()->company_id);
+        $menus   = $company->Menu;
+        $tables  = Table::all();
 
-    public function edit(string $id, string $unique_key)
-    {
-        return $this->show($id, $unique_key);
+        return view('dashboard.company.cashier.orders-edit', compact('order', 'menus', 'tables'));
     }
 
     public function store(Request $request)
@@ -199,36 +179,66 @@ class ManagerOrderController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update the order status (paid / finish).
+     * Expects a 'status' field in the request body.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Order $order)
     {
-        //
+        $validated = $request->validate([
+            'customer_name'       => 'nullable|string|max:255',
+            'customer_phone'      => 'nullable|string|max:255',
+            'table_id'            => 'nullable|exists:tables,id',
+            'items'               => 'nullable|array',
+            'items.*.id'          => 'required|integer|exists:menu_items,id',
+            'items.*.qty'         => 'required|integer|min:1',
+            'items.*.description' => 'nullable|string|max:1000',
+        ]);
+
+        // update customer
+        if ($order->customer) {
+            $order->customer->update([
+                'name'  => $validated['customer_name'] ?? null,
+                'phone' => $validated['customer_phone'] ?? null,
+            ]);
+        }
+
+        // update order
+        $order->update([
+            'table_id' => $validated['table_id'] ?? null,
+        ]);
+
+        // sync items
+        $syncData = [];
+
+        foreach ($validated['items'] ?? [] as $item) {
+            $syncData[$item['id']] = [
+                'qty'         => $item['qty'],
+                'description' => $item['description'] ?? '',
+            ];
+        }
+
+        $order->menu_item()->sync($syncData);
+
+        return redirect()
+            ->route('company.cashier.orders.index')
+            ->with('success', 'سفارش بروزرسانی شد');
     }
 
-    public function paidding(string $id, string $unique_key)
+    public function updateStatus(Request $request, Order $order)
     {
-        $order = Order::where('id', $id)->where('unique_key', $unique_key)->first();
-        if ($order->status == 'paid') {
-            return response()->json('Order is already paid', 409);
-        }
-        $order->status = 'paid';
-        $order->save();
-        return response()->json('', 200);
-    }
+        $validated = $request->validate([
+            'status' => ['required', new Enum(OrderStatus::class)],
+        ]);
 
-    public function finishing(string $id, string $unique_key)
-    {
-        $order = Order::where('id', $id)->where('unique_key', $unique_key)->first();
-        if ($order->status == 'paid') {
-            return response()->json('Order is already paid', 409);
-        }
-        if ($order->status == 'finish') {
-            return response()->json('Order is already finish', 409);
-        }
-        $order->status = 'finish';
-        $order->save();
-        return response()->json('', 200);
+        $order->update([
+            'status' => $validated['status'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'وضعیت سفارش بروزرسانی شد',
+            'status'  => $order->status,
+        ]);
     }
 
     public function showFactor(string $id, string $unique_key)
