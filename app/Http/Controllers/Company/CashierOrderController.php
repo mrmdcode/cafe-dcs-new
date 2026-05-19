@@ -14,46 +14,75 @@ class CashierOrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::withTrashed()
+        $user = auth()->user();
+
+        $company = Company::query()
+            ->with([
+                'Menu.MenuItem',
+                'Table.orders' => function ($query) {
+                    $query->whereIn('status', ['registration', 'edit'])
+                        ->where('created_at', '>', now()->subHours(2))
+                        ->latest();
+                },
+            ])
+            ->findOrFail($user->company_id);
+
+        $orders = Order::query()
+            ->withTrashed()
             ->with([
                 'table',
                 'customer',
                 'order_recipient',
-                'menu_item' => fn($q) => $q->withTrashed(),
+                'menu_item' => fn($query) => $query->withTrashed(),
             ])
-            ->where('company_id', auth()->user()->company_id);
+            ->where('company_id', $user->company_id)
 
-        // --- Search fields ---
-        $query->searchCustomer($request->input('customer_name'));
-        $query->searchLocation($request->input('location'));
-        $query->searchInvoice($request->input('invoice'));
+        // Search filters
+            ->searchCustomer($request->customer_name)
+            ->searchLocation($request->location)
+            ->searchInvoice($request->invoice)
 
-        // --- Date filters ---
-        $dateFrom = $request->input('date_from');
-        $dateTo   = $request->input('date_to');
+        // Date filters
+            ->when(
+                $request->filled('date_from') || $request->filled('date_to'),
+                function ($query) use ($request) {
+                    $query->dateFrom($request->date_from)
+                        ->dateTo($request->date_to);
+                },
+                function ($query) use ($request) {
+                    $query
+                        ->when($request->filled('today'), fn($q) => $q->today())
+                        ->when($request->filled('yesterday'), fn($q) => $q->yesterday())
+                        ->when($request->filled('older'), fn($q) => $q->older());
+                }
+            )
 
-        if ($dateFrom || $dateTo) {
-            // Custom range: use date_from/date_to regardless of the preset buttons
-            $query->dateFrom($dateFrom)
-                ->dateTo($dateTo);
-        } else {
-            // No custom range – apply time presets
-            if ($request->filled('today')) {
-                $query->today();
-            } elseif ($request->filled('yesterday')) {
-                $query->yesterday();
-            } elseif ($request->filled('older')) {
-                $query->older();
-            }
-        }
+        // Status filters
+            ->when($request->filled('paid'), fn($query) => $query->statusPaid())
 
-        // --- Paid / finished switch ---
-        if ($request->filled('paid')) {
-            $query->statusPaid();
-        }
+            ->latest()
+            ->paginate(50);
 
-        $orders = $query->get();
-        return view('dashboard.company.cashier.orders', compact('orders'));
+        $menus = $company->Menu->map(fn($menu) => [
+            'id'        => $menu->id,
+            'name'      => $menu->name,
+            'menu_item' => $menu->MenuItem,
+        ]);
+
+        $tables = $company->Table->map(function ($table) {
+            $table->setRelation(
+                'orders',
+                $table->orders->first()
+            );
+
+            return $table;
+        });
+
+        return view('dashboard.company.cashier.orders.index', [
+            'orders' => $orders,
+            'tables' => $tables,
+            'menus'  => $menus,
+        ]);
     }
 
     /**
@@ -83,7 +112,7 @@ class CashierOrderController extends Controller
         $menus   = $company->Menu;
         $tables  = Table::all();
 
-        return view('dashboard.company.cashier.orders-edit', compact('order', 'menus', 'tables'));
+        return view('dashboard.company.cashier.orders.edit', compact('order', 'menus', 'tables'));
     }
 
     /**

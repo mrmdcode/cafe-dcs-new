@@ -215,17 +215,4 @@ class ManagerMenuController extends Controller
         return redirect()->route('company.category.index');
 
     }
-
-    public function getMenuItems(Menu $menu)
-    {
-        $companyID = Auth::user()->company_id;
-        
-        if ($menu->company_id !== $companyID) {
-            abort(403, 'Unauthorized');
-        }
-
-        $items = $menu->MenuItem()->get(['id', 'name', 'price']);
-
-        return response()->json($items);
-    }
 }

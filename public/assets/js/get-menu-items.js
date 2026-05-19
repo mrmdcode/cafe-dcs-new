@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        fetch(`/company/menu/${menuId}/items`)
+        fetch(`/api/company/menu/${menuId}/items`)
             .then(res => res.json())
             .then(items => {
                 itemSelect.disabled = false;

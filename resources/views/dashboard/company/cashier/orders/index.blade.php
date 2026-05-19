@@ -1,9 +1,9 @@
 @extends('Layouts.app')
 @section('aside_menu')
-    @include('dashboard.company.manager._partial._menu')
+    @include('dashboard.company.cashier._partial._menu')
 @endsection
 @section('top_menu')
-    @include('dashboard.company.manager._partial._topMenu')
+    @include('dashboard.company.cashier._partial._topMenu')
 @endsection
 @section('content')
     <!-- Search row -->
@@ -109,7 +109,6 @@
                 @if (session('error'))
                     <div class="alert alert-danger">{{ session('error') }}</div>
                 @endif
-
                 <div class="default-table-area recent-orders">
                     <div class="table-responsive">
                         <table class="table">
@@ -307,10 +306,13 @@
     </div>
 @endsection
 @section('js')
+    {{-- <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.3/dist/echo.iife.js"></script> --}}
     <script src="{{ asset('/assets/js/qz-tray.js') }}"></script>
     <script src="{{ asset('/assets/js/printer-connection.js') }}"></script>
     <script src="{{ asset('/assets/js/view-order-actions.js') }}"></script>
     <script src="{{ asset('/assets/js/get-menu-items.js') }}"></script>
+    {{-- <script src="{{ asset('/assets/js/qz-tray-connection.js') }}"></script> --}}
 @endsection
 @section('css')
 @endsection

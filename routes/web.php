@@ -47,7 +47,6 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
     Route::get('menu/{menu}/sor_show', [\App\Http\Controllers\Company\ManagerMenuController::class, 'sor_show'])->name('company.menu.sor_show');
     Route::get('menu/{menu}/sc_hide', [\App\Http\Controllers\Company\ManagerMenuController::class, 'sc_hide'])->name('company.menu.sc_hide');
     Route::get('menu/{menu}/sc_show', [\App\Http\Controllers\Company\ManagerMenuController::class, 'sc_show'])->name('company.menu.sc_show');
-    Route::get('/menu/{menu}/items', [\App\Http\Controllers\Company\ManagerMenuController::class, 'getMenuItems'])->name('company.menu.items');
     Route::apiResource('menu_item', \App\Http\Controllers\Company\ManagerMenuItemController::class)->names('company.menu_item');
     Route::get('menu_item/{menu_item}/sor_hide', [\App\Http\Controllers\Company\ManagerMenuItemController::class, 'sor_hide'])->name('company.menu_item.sor_hide');
     Route::get('menu_item/{menu_item}/sor_show', [\App\Http\Controllers\Company\ManagerMenuItemController::class, 'sor_show'])->name('company.menu_item.sor_show');
@@ -60,12 +59,12 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
     Route::post('/printers', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'store'])->name('company.printer.store');
     Route::put('/printers/{printer}', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'update'])->name('company.printer.update');
     Route::delete('/printers/{printer}', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'destroy'])->name('company.printer.destroy');
-   
+
     Route::apiResource('table', \App\Http\Controllers\Company\ManagerTableController::class)->names('company.table');
     Route::post('/orders/indexData/', [\App\Http\Controllers\Company\ManagerOrderController::class, 'indexData'])->name('company.order.index.data');
     Route::get('/orders/init_modal', [\App\Http\Controllers\Company\ManagerOrderController::class, 'init_modal'])->name('company.order.index.data');
     Route::get('/orders/tables-menus', [\App\Http\Controllers\Company\ManagerOrderController::class, 'getTablesAndMenus'])->name('company.order.tables-menus');
-    Route::get('/orders/edit/{id}-{unique_key}', [\App\Http\Controllers\Company\ManagerOrderController::class, 'edit'])->name('company.order.eddit');
+    Route::get('/orders/{order}/edit', [\App\Http\Controllers\Company\ManagerOrderController::class, 'edit'])->name('company.orders.edit');
     Route::get('/orders/view/{id}-{unique_key}', [\App\Http\Controllers\Company\ManagerOrderController::class, 'show'])->name('company.order.eddit');
     Route::post('/orders/padding/{id}-{unique_key}', [\App\Http\Controllers\Company\ManagerOrderController::class, 'paidding'])->name('company.order.eddit');
     Route::post('/orders/finishing/{id}-{unique_key}', [\App\Http\Controllers\Company\ManagerOrderController::class, 'finishing'])->name('company.order.eddit');

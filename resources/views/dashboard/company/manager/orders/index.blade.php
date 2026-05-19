@@ -151,7 +151,7 @@
                                                 data-key="{{ $order->unique_key }}">
                                                 نمایش
                                             </button>
-                                            <a href="{{ route('company.cashier.orders.edit', $order) }}"
+                                            <a href="{{ route('company.orders.edit', $order) }}"
                                                 class="btn btn-warning {{ in_array($order->getRawOriginal('status'), ['finish', 'paid']) ? 'disabled' : '' }}">
                                                 ویرایش
                                             </a>

@@ -158,7 +158,7 @@
 
     // Fetch order and open modal
     function openOrderModal(orderId, orderKey) {
-        fetch('/api/orders/' + orderId, {
+        fetch('/api/company/orders/' + orderId, {
             credentials: 'include',
             headers: {
                 'Accept': 'application/json',

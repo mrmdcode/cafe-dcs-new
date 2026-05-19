@@ -86,7 +86,7 @@ class ManagerOrderController extends Controller
             return $table;
         });
 
-        return view('dashboard.company.manager.orders', [
+        return view('dashboard.company.manager.orders.index', [
             'orders' => $orders,
             'tables' => $tables,
             'menus'  => $menus,
@@ -120,7 +120,7 @@ class ManagerOrderController extends Controller
         $menus   = $company->Menu;
         $tables  = Table::all();
 
-        return view('dashboard.company.cashier.orders-edit', compact('order', 'menus', 'tables'));
+        return view('dashboard.company.manager.orders.edit', compact('order', 'menus', 'tables'));
     }
 
     public function store(Request $request)

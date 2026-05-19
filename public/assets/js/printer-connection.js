@@ -5,7 +5,7 @@
 
     // Certificate
     qz.security.setCertificatePromise(function (resolve, reject) {
-        fetch('api/printer/certificate', {
+        fetch('api/company/printer/certificate', {
             cache: 'no-store',
             credentials: 'include',
             headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="x-csrf-token"]').content }
