@@ -82,6 +82,16 @@
             </div> --}}
     </div>
 
+    <div class="row mx-1 bg-body-secondary mb-4 rounded-3 pt-3 pb-3">
+        <div class="col-md-3">
+            <div class="form-group d-flex mb-0">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="QZPrinter.changePrinter()">
+                    <i class="mdi mdi-printer"></i> تغییر پرینتر
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="row mx-1">
         <div class="card bg-white border-0 ">
             <div class="card-body">
@@ -204,13 +214,12 @@
     </div>
 @endsection
 @section('js')
-    <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.3/dist/echo.iife.js"></script>
-    <script src="{{asset('/assets/js/qz-tray.js')}}"></script>
-    <script src="{{asset('/assets/js/orders_controller.js')}}"></script>
-    {{-- <script src="{{asset('/assets/js/cashier_printers.js')}}"></script> --}}
-    <script src="{{asset('/assets/js/qz-tray-connection.js')}}"></script>
-
+    {{-- <script src="https://js.pusher.com/7.2/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.11.3/dist/echo.iife.js"></script> --}}
+    <script src="{{ asset('/assets/js/qz-tray.js') }}"></script>
+    <script src="{{ asset('/assets/js/cashier-printer-connection.js') }}"></script>
+    <script src="{{ asset('/assets/js/cashier-view-order-actions.js') }}"></script>
+    {{-- <script src="{{ asset('/assets/js/qz-tray-connection.js') }}"></script> --}}
 @endsection
 @section('css')
 @endsection

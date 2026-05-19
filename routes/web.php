@@ -83,12 +83,15 @@ Route::prefix('company')->middleware(['auth', 'checkCompanyManager', 'active.com
     Route::get('/financial', [\App\Http\Controllers\Company\ManagerFinancialReportController::class, 'index'])->name('company.financial');
 });
 Route::prefix('cashier')->name('company.')->middleware(['auth', 'checkCashier'])->group(function () {
-     Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('cashier.dashboard');
+    Route::get('/', [\App\Http\Controllers\Company\CashierActionController::class, 'dashboard'])->name('cashier.dashboard');
     Route::get('/orders', [\App\Http\Controllers\Company\CashierOrderController::class, 'index'])->name('cashier.orders.index');
     Route::get('/orders/{order}', [\App\Http\Controllers\Company\CashierOrderController::class, 'show'])->name('cashier.orders.show');
     Route::get('/orders/{order}/edit', [\App\Http\Controllers\Company\CashierOrderController::class, 'edit'])->name('cashier.orders.edit');
     Route::patch('/orders/{order}/update', [\App\Http\Controllers\Company\CashierOrderController::class, 'update'])->name('cashier.orders.update');
-    Route::patch('/orders/{order}/status',[\App\Http\Controllers\Company\CashierOrderController::class, 'updateStatus'])->name('cashier.orders.status');
+    Route::patch('/orders/{order}/status', [\App\Http\Controllers\Company\CashierOrderController::class, 'updateStatus'])->name('cashier.orders.status');
+    // ── Printer (reuse manager controller, cashier just reads) ──
+    Route::get('/printer/cashier-data', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'getCashierPrinter'])->name('cashier.printer.data');
+    Route::get('/printer/certificate', [\App\Http\Controllers\Company\ManagerPrinterController::class, 'certificate'])->name('cashier.printer.certificate');
 });
 Route::prefix('order_recipient')->middleware(['auth', 'OrderRecipient'])->group(function () {
     Route::get('/', [\App\Http\Controllers\Company\OrderRecipientActionController::class, 'dashboard'])->name('company.order_recipient.dashboard');
