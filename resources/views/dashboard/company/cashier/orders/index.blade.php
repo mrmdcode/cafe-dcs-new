@@ -8,33 +8,43 @@
 @section('content')
     <!-- Search row -->
     <form method="GET" action="{{ request()->url() }}">
-        <div class="row mx-1 bg-body-secondary mb-4 rounded-3 pt-3 pb-3">
+        <div class="row mx-1 bg-body-secondary mb-4 rounded-3 py-3 g-2 align-items-center">
             <div class="col-md-3">
-                <div class="form-group d-flex mb-0">
-                    <label class="col-form-label px-2">نام مشتری :</label>
-                    <input type="text" class="form-control-sm text-dark ps-5 bg-light" name="customer_name"
+                <div class="d-flex align-items-center gap-2">
+                    <label class="col-form-label text-nowrap mb-0 small">
+                        نام مشتری :
+                    </label>
+                    <input type="text" class="form-control form-control-sm text-dark bg-light" name="customer_name"
                         value="{{ request('customer_name') }}">
                 </div>
             </div>
+
             <div class="col-md-3">
-                <div class="form-group d-flex mb-0">
-                    <label class="col-form-label px-2">میز :</label>
-                    <input type="text" class="form-control-sm text-dark ps-5 bg-light" name="location"
+                <div class="d-flex align-items-center gap-2">
+                    <label class="col-form-label text-nowrap mb-0 small">
+                        میز :
+                    </label>
+
+                    <input type="text" class="form-control form-control-sm text-dark bg-light" name="location"
                         value="{{ request('location') }}">
                 </div>
             </div>
+
             <div class="col-md-3">
-                <div class="form-group d-flex mb-0">
-                    <label class="col-form-label px-2">شماره فاکتور :</label>
-                    <input type="text" class="form-control-sm text-dark ps-5 bg-light" name="invoice"
+                <div class="d-flex align-items-center gap-2">
+                    <label class="col-form-label text-nowrap mb-0 small">
+                        شماره فاکتور :
+                    </label>
+
+                    <input type="text" class="form-control form-control-sm text-dark bg-light" name="invoice"
                         value="{{ request('invoice') }}">
                 </div>
             </div>
-            <div class="col-md-3">
-                <div class="form-group d-flex mb-0">
-                    <!-- A general submit button (optional) -->
-                    <button type="submit" class="btn btn-primary mb-3">اعمال فیلترها</button>
-                </div>
+
+            <div class="col-md-3 d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary btn-sm w-75">
+                    اعمال فیلترها
+                </button>
             </div>
         </div>
     </form>

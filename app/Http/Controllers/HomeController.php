@@ -1,10 +1,7 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -29,17 +26,16 @@ class HomeController extends Controller
         if ($user->hasRole('admin')) {
             return redirect()->route('admin.dashboard');
         }
-        if(!Company::where('id',$user->company_id)->first()->active){
-            return abort(403,"پنل فعال نیست .شارژ کنید .");
-        }
-        else{
-            if (!$user->hasRole('admin') && $user->company_id != null && $user->position == "manager") {
+        if (! Company::where('id', $user->company_id)->first()->active) {
+            return abort(403, "پنل فعال نیست .شارژ کنید .");
+        } else {
+            if (! $user->hasRole('admin') && $user->company_id != null && $user->position == "manager") {
                 return redirect()->route('company.manager.dashboard');
             }
-            if (!$user->hasRole('admin') && $user->company_id != null && $user->position == "cashier") {
+            if (! $user->hasRole('admin') && $user->company_id != null && $user->position == "cashier") {
                 return redirect()->route('company.cashier.dashboard');
             }
-            if (!$user->hasRole('admin') && $user->company_id != null && $user->position == "order_recipient") {
+            if (! $user->hasRole('admin') && $user->company_id != null && $user->position == "order_recipient") {
                 return redirect()->route('company.order_recipient.dashboard');
             }
         }
