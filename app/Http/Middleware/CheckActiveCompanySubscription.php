@@ -12,8 +12,12 @@ class CheckActiveCompanySubscription
     {
         $user = $request->user();
 
-        if ($user && ! SubscriptionService::hasActiveSubscription($user)) {
-            session()->put('url.intended', $request->url());
+        if (! $user) {
+            return redirect()->route('login');
+        }
+
+        if (! SubscriptionService::hasActiveSubscription($user)) {
+            session()->put('url.intended', $request->fullUrl());
             return redirect()->route('subscription.required');
         }
 

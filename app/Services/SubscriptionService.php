@@ -2,7 +2,6 @@
 namespace App\Services;
 
 use App\Enums\CompanySubscriptionStatus;
-use App\Models\Company;
 use App\Models\CompanySubscription;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -22,21 +21,20 @@ class SubscriptionService
     public static function getActiveSubscription(?User $user = null): ?CompanySubscription
     {
         $user = self::getUser($user);
-        if (! $user || ! $user->company_id) {
+
+        // User not logged in or has no company
+        if (! $user?->company_id) {
             return null;
         }
 
-        $company = Company::find($user->company_id);
-        if (! $company) {
-            return null;
-        }
-
-        return $company->subscriptions()
+        return CompanySubscription::query()
+            ->where('company_id', $user->company_id)
             ->where('status', CompanySubscriptionStatus::ACTIVE)
             ->where(function ($query) {
                 $query->where('ends_at', '>', now())
-                    ->orWhereNull('ends_at'); // for lifetime subscriptions
+                    ->orWhereNull('ends_at'); // lifetime subscription
             })
+            ->latest()
             ->first();
     }
 }
