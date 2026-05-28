@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Order extends Model
 {
@@ -140,5 +141,15 @@ class Order extends Model
     public function scopeOlder(Builder $query)
     {
         return $query->where('created_at', '<', Carbon::yesterday()->startOfDay());
+    }
+
+    # Helpers
+    public static function generateUniqueKey(): string
+    {
+        do {
+            $key = 'ORD-' . now()->format('Ymd') . '-' . strtoupper(Str::random(4));
+        } while (static::where('unique_key', $key)->exists());
+
+        return $key;
     }
 }

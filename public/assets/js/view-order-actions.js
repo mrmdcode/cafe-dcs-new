@@ -1,15 +1,20 @@
 (function () {
     'use strict';
 
-    //  State
     var currentOrder = null; // holds the last fetched order object
 
     // DOM refs (resolved after DOMContentLoaded)
-    var modal, modalTitle, tbody, elDiscount, elTax, elTotal, btnPrint;
+    var modal, modalTitle, tbody, elDiscount, elTax, elTotal, btnPrint, btnPaid, btnFinish, btnDelete;
 
     //  Helpers
     function fmt(n) {
         return Number(n || 0).toLocaleString('fa-IR');
+    }
+
+    function getCsrfToken() {
+        var meta = document.querySelector('meta[name="x-csrf-token"]') ||
+            document.querySelector('meta[name="X-CSRF-TOKEN"]');
+        return meta ? meta.content : '';
     }
 
     // Populate modal with order data
@@ -17,8 +22,13 @@
         currentOrder = order;
 
         // Title
-        modalTitle.textContent = 'سفارش #' + order.id +
-            (order.customer ? ' – ' + order.customer.name : '');
+        if (order.customer) {
+            modalTitle.textContent = 'سفارش ' + order.customer.name + ' عزیز';
+        } else if (order.table) {
+            modalTitle.textContent = 'سفارش میز ' + order.table.name;
+        } else {
+            modalTitle.textContent = 'سفارش ' + order.id + '-' + order.unique_key;
+        }
 
         // Items
         tbody.innerHTML = '';
@@ -49,6 +59,18 @@
         elDiscount.textContent = fmt(discount);
         elTax.textContent = fmt(tax);
         elTotal.textContent = fmt(total);
+
+        // Button states based on order status
+        var isPaid = order.status === 'paid';
+        var isFinished = order.status === 'finish' || isPaid;
+
+        btnPaid.disabled = isPaid;
+        btnFinish.disabled = isFinished;
+        btnDelete.disabled = isPaid;
+
+        btnPaid.classList.toggle('disabled', isPaid);
+        btnFinish.classList.toggle('disabled', isFinished);
+        btnDelete.classList.toggle('disabled', isPaid);
     }
 
     // Build customer receipt HTML
@@ -83,7 +105,6 @@
 
         return '<div style="width:270px;direction:rtl;font-family:Tahoma,sans-serif;font-size:12px;">' +
 
-            // Header
             '<div style="text-align:center;border-bottom:1px dashed #000;padding-bottom:6px;margin-bottom:6px;">' +
             '<strong style="font-size:15px;">فاکتور مشتری</strong><br>' +
             'شماره سفارش : ' + order.id + '<br>' +
@@ -91,7 +112,6 @@
             printDate + ' &nbsp; ' + printTime +
             '</div>' +
 
-            // Items table
             '<table style="width:100%;border-collapse:collapse;">' +
             '<thead>' +
             '<tr style="background:#f0f0f0;">' +
@@ -105,7 +125,6 @@
             '<tbody>' + rows + '</tbody>' +
             '</table>' +
 
-            // Totals
             '<div style="margin-top:8px;border-top:1px dashed #000;padding-top:6px;">' +
             '<div style="display:flex;justify-content:space-between;"><span>جمع اقلام :</span><span>' + fmt(itemTotal) + '</span></div>' +
             '<div style="display:flex;justify-content:space-between;"><span>تخفیف :</span><span>' + fmt(discount) + '</span></div>' +
@@ -115,7 +134,6 @@
             '</div>' +
             '</div>' +
 
-            // Footer
             '<div style="text-align:center;margin-top:10px;font-size:11px;border-top:1px dashed #000;padding-top:6px;">' +
             'با تشکر از خرید شما' +
             '</div>' +
@@ -132,8 +150,6 @@
         window.QZPrinter.getConnection()
             .then(function (printerName) {
                 var config = qz.configs.create(printerName);
-                console.log(config);
-
                 var data = [{
                     type: 'pixel',
                     format: 'html',
@@ -156,14 +172,129 @@
             });
     }
 
+    // Mark order as paid
+    function paying() {
+        if (!currentOrder) return;
+
+        var id = currentOrder.id;
+        var unique_key = currentOrder.unique_key;
+
+        Swal.fire({
+            title: 'آیا تمایل به تصویه فاکتور ' + unique_key + '-' + id + ' هستید .',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'تسویه !'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            fetch('/api/company/orders/paying/' + id, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken()
+                },
+                body: JSON.stringify({ id: id })
+            })
+                .then(function (r) {
+                    if (!r.ok) return r.json().then(function (d) { throw d; });
+                    return r.json();
+                })
+                .then(function () {
+                    Swal.fire({
+                        position: 'top-end',
+                        title: 'تسویه شد .',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function () {
+                        location.reload();
+                    });
+
+                    // Reflect the new status locally so buttons update without a re-fetch
+                    currentOrder.status = 'paid';
+                    populateModal(currentOrder);
+                })
+                .catch(function (err) {
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: (typeof err === 'string' ? err : (err.message || 'خطایی رخ داد')),
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                });
+        });
+    }
+
+    // Mark order as finished (ready / sent to table)
+    function finishing() {
+        if (!currentOrder) return;
+
+        var id = currentOrder.id;
+        var unique_key = currentOrder.unique_key;
+
+        Swal.fire({
+            title: 'فاکتور ' + unique_key + ' برای مشتری ارسال شد .',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'اتمام !'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            fetch('/api/company/orders/finish/' + id, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken()
+                }
+            })
+                .then(function (r) {
+                    if (!r.ok) return r.json().then(function (d) { throw d; });
+                    return r.json();
+                })
+                .then(function () {
+                    Swal.fire({
+                        position: 'top-end',
+                        title: 'فاکتور ارسال شد .',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function () {
+                        location.reload();
+                    });
+
+                    // Reflect new status locally
+                    currentOrder.status = 'finish';
+                    populateModal(currentOrder);
+                })
+                .catch(function (err) {
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: (typeof err === 'string' ? err : (err.message || 'خطایی رخ داد')),
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                });
+        });
+    }
+
     // Fetch order and open modal
-    function openOrderModal(orderId, orderKey) {
+    function openOrderModal(orderId) {
         fetch('/api/company/orders/' + orderId, {
             credentials: 'include',
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="x-csrf-token"]').content
+                'X-CSRF-TOKEN': getCsrfToken()
             }
         })
             .then(function (r) {
@@ -173,10 +304,7 @@
             })
             .then(function (order) {
                 populateModal(order);
-                var bsModal = bootstrap.Modal.getOrCreateInstance(
-                    document.getElementById('view_order_modal')
-                );
-                bsModal.show();
+                bootstrap.Modal.getOrCreateInstance(modal).show();
             })
             .catch(function (e) {
                 alert(e.message || e);
@@ -194,15 +322,21 @@
         elTax = document.getElementById('tax');
         elTotal = document.getElementById('total_all');
         btnPrint = document.getElementById('print');
+        btnPaid = document.getElementById('paid');
+        btnFinish = document.getElementById('finish');
+        btnDelete = document.getElementById('delete');
 
+        // Open modal on view button click
         document.addEventListener('click', function (e) {
             var btn = e.target.closest('.view-btn');
             if (!btn) return;
             openOrderModal(btn.dataset.id, btn.dataset.key);
         });
 
-        // Print button inside modal
+        // Button handlers
         btnPrint.addEventListener('click', printOrder);
+        btnPaid.addEventListener('click', paying);
+        btnFinish.addEventListener('click', finishing);
     });
 
 }());

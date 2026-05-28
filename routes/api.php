@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->prefix('company')->name('company.')->group(function () {
     Route::get('/orders/{order}', [\App\Http\Controllers\API\Company\OrderController::class, 'show'])->name('orders.show');
+    Route::post('/orders/paying/{order}', [\App\Http\Controllers\API\Company\OrderController::class, 'paying']);
+    Route::post('/orders/finish/{order}', [\App\Http\Controllers\API\Company\OrderController::class, 'finish']);
     Route::get('/printer/cashier-data', [\App\Http\Controllers\API\Company\PrinterController::class, 'getCashierPrinter'])->name('printer.cashier.data');
     Route::get('/printer/certificate', [\App\Http\Controllers\API\Company\PrinterController::class, 'certificate'])->name('printer.certificate');
     Route::get('/menu/{menu}/items', [\App\Http\Controllers\API\Company\MenuController::class, 'getMenuItems'])->name('menu.items');

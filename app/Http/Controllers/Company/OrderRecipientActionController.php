@@ -68,11 +68,6 @@ class OrderRecipientActionController extends Controller
         try {
 
             $faker = Faker::create();
-            $unique_key ='';
-            for ($i = 1; $i <= rand(5,10); $i++) {
-                $unique_key = $unique_key.$faker->randomLetter();
-
-            }
 
             $company = Company::where('id',auth()->user()->company_id)->first();
             $customer = Customer::where('phone',$req->input('customer_phone'))->first();
@@ -83,7 +78,7 @@ class OrderRecipientActionController extends Controller
                 ]);
             }
             $order = Order::create([
-                'unique_key'=>$unique_key,
+                'unique_key'=> Order::generateUniqueKey(),
                 'table_id' => $req->input('tableSelected'),
                 'company_id' => $company->id,
                 'customer_id' => $customer->id,

@@ -160,7 +160,7 @@ class ManagerOrderController extends Controller
             'table_id'           => $request->table_id,
             'order_recipient_id' => Auth::id(),
             'status'             => 'registration',
-            'unique_key'         => Str::random(32),
+            'unique_key'         => Order::generateUniqueKey(),
             'created_at'         => Carbon::now(),
             'updated_at'         => Carbon::now(),
             // Do not set waiter_id, cashier, discount, waiter_time, cashier_time here
