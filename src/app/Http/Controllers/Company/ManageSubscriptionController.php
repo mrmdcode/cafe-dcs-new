@@ -5,23 +5,14 @@ use App\Enums\CompanySubscriptionStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\CompanySubscription;
-use App\Services\ZarinpalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class ManageSubscriptionController extends Controller
 {
-    protected ZarinpalService $zarinpal;
-
-                                   // Subscription plan configuration – you can move these to config or database
-    protected int $amount    = 0;  // in IRT (e.g. 50,000 toman = 500,000 IRR? adjust accordingly)
     protected int $validDays = 30; // subscription duration in days
-
-    public function __construct(ZarinpalService $zarinpal)
-    {
-        $this->zarinpal = $zarinpal;
-    }
 
     /**
      * Show the subscription payment page.
@@ -35,8 +26,7 @@ class ManageSubscriptionController extends Controller
             abort(403, 'شرکت شما تعرفه‌ای تعیین نکرده است.');
         }
 
-        $this->amount = (int) $company->fee_received;
-        $amount       = $this->amount;
+        $amount = (int) $company->fee_received;
         return view('dashboard.company.manager.subscription', compact('amount'));
     }
 
@@ -53,26 +43,32 @@ class ManageSubscriptionController extends Controller
 
         $amount      = (int) $company->fee_received;
         $description = 'اشتراک ماهانه - ' . ($user->company->name ?? '');
-        $callbackUrl = route('subscription.callback');
 
-        // Optionally pass user's mobile/email
-        $mobile = $user->mobile ?? null;
-        $email  = $user->email ?? null;
+        $response = Http::acceptJson()->withHeaders([
+            'X-API-Key' => config('services.company_manager.api_key'),
+        ])->withOptions([
+            'verify' => false,
+        ])->post(config('services.company_manager.url') . '/api/payments/initiate', [
+            'company_id'   => $user->company_id,
+            'amount'       => $amount,
+            'description'  => $description,
+            'callback_url' => route('subscription.callback'),
+            'mobile'       => $user->mobile ?? null,
+            'email'        => $user->email ?? null,
+        ]);
 
-        $result = $this->zarinpal->request($amount, $description, $callbackUrl, $mobile, $email);
-
-        if ($result['success']) {
-            // Store payment details temporarily – we can use session or database
-            session()->put('pending_payment', [
-                'authority'  => $result['authority'],
-                'amount'     => $amount,
-                'company_id' => $user->company_id,
-            ]);
-
-            return redirect()->away($result['payment_url']);
+        if (! $response->successful() || ! $response->json('success')) {
+            return back()->with('error', 'خطا در اتصال به درگاه پرداخت: ' . $response->json('error', 'Unknown error'));
         }
 
-        return back()->with('error', 'خطا در اتصال به درگاه پرداخت: ' . ($result['message'] ?? 'Unknown error'));
+        // Store token instead of authority — token is our verification key
+        session()->put('pending_payment', [
+            'token'      => $response->json('token'),
+            'amount'     => $amount,
+            'company_id' => $user->company_id,
+        ]);
+
+        return redirect()->away($response->json('payment_url'));
     }
 
     /**
@@ -80,59 +76,55 @@ class ManageSubscriptionController extends Controller
      */
     public function callback(Request $request)
     {
-        $authority = $request->query('Authority');
-        $status    = $request->query('Status');
-
         $pending = session()->get('pending_payment');
 
-        // Basic validation
-        if (! $authority || ! $pending || $pending['authority'] !== $authority) {
+        if (! $pending) {
             return redirect()->route('subscription.required')
                 ->with('error', 'اطلاعات پرداخت نامعتبر است.');
         }
 
-        if ($status !== 'OK') {
+        // Payment was cancelled
+        if ($request->success !== 'true') {
+            session()->forget('pending_payment');
             return redirect()->route('subscription.required')
                 ->with('error', 'پرداخت توسط کاربر لغو شد.');
         }
 
-        // Verify the transaction with Zarinpal
-        $verification = $this->zarinpal->verify($authority, $pending['amount']);
+        // Double-check with Company Manager status endpoint
+        $response = Http::withOptions([
+            'verify' => false,
+        ])->withHeaders([
+            'X-API-Key' => config('services.company_manager.api_key'),
+        ])->get(config('services.company_manager.url') . '/api/payments/status/' . $pending['token']);
 
-        if (! $verification['success']) {
+        if (! $response->successful() || $response->json('status') !== 'paid') {
+            session()->forget('pending_payment');
             return redirect()->route('subscription.required')
-                ->with('error', 'تأیید پرداخت ناموفق بود: ' . ($verification['message'] ?? 'خطا'));
+                ->with('error', 'تأیید پرداخت ناموفق بود.');
         }
 
-        // Payment successful – activate subscription for the company
-        DB::transaction(function () use ($pending, $verification, $authority) {
+        // Payment confirmed — activate subscription
+        DB::transaction(function () use ($pending, $response) {
             $companyId = $pending['company_id'];
-
-            $company = Company::find($companyId);
+            $company   = Company::find($companyId);
             $company->active();
 
-            // Optional: deactivate any existing active subscriptions for this company
             CompanySubscription::where('company_id', $companyId)
                 ->where('status', CompanySubscriptionStatus::ACTIVE)
-                ->update(['status' => CompanySubscriptionStatus::EXPIRED]); // or 'canceled'
+                ->update(['status' => CompanySubscriptionStatus::EXPIRED]);
 
-            // Create new active subscription
             CompanySubscription::create([
                 'company_id'  => $companyId,
                 'status'      => CompanySubscriptionStatus::ACTIVE,
                 'starts_at'   => now(),
                 'ends_at'     => now()->addDays($this->validDays),
-                'payment_ref' => $verification['ref_id'] ?? null,
-                'authority'   => $authority,
+                'payment_ref' => $response->json('ref_id'),
             ]);
         });
 
-        // Clear the pending session data
         session()->forget('pending_payment');
 
-        // Redirect to the originally intended URL (or dashboard)
         $intended = session()->pull('url.intended', route('company.manager.dashboard'));
-
         return redirect($intended)->with('success', 'پرداخت با موفقیت انجام شد. اشتراک شما فعال شد.');
     }
 }

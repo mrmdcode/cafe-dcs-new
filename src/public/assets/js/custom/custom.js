@@ -47,8 +47,8 @@
 		var hours = now.getHours();
 		var minutes = now.getMinutes();
 		var seconds = now.getSeconds();
-		var digitalDate = document.getElementById("digitalDate");
-		digitalDate.innerHTML = hours + ":" + minutes;
+		// var digitalDate = document.getElementById("digitalDate");
+		// digitalDate.innerHTML = hours + ":" + minutes;
 	}
 	setInterval(updateDate, 1000);
 
@@ -698,7 +698,7 @@ try {
 			setTheme('ltr');
 		}
 	}
-	
+
 	// Immediately invoked function to set the theme on initial load
 	(function () {
 		if (localStorage.getItem('farol_ltr') === 'ltr') {

@@ -14,6 +14,13 @@
                     <button type="submit" class="btn btn-primary">پرداخت و فعال‌سازی</button>
                 </form>
             </div>
+             @foreach (['success', 'error', 'warning', 'info'] as $msg)
+                @if (session()->has($msg))
+                    <div class="alert alert-warning">
+                        {{ session($msg) }}
+                    </div>
+                @endif
+            @endforeach
         </div>
     </div>
 @endsection

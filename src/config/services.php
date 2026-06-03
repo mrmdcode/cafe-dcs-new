@@ -14,32 +14,36 @@ return [
     |
     */
 
-    'mailgun'   => [
+    'mailgun'         => [
         'domain'   => env('MAILGUN_DOMAIN'),
         'secret'   => env('MAILGUN_SECRET'),
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
         'scheme'   => 'https',
     ],
 
-    'postmark'  => [
+    'postmark'        => [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
-    'ses'       => [
+    'ses'             => [
         'key'    => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
-        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'), 
+        'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'kavenegar' => [
+    'kavenegar'       => [
         'key'    => env('KAVENEGAR_API_KEY'),
         'sender' => env('KAVENEGAR_SENDER'),
     ],
 
-    'zarinpal'  => [
+    'zarinpal'        => [
         'merchant_id'  => env('ZARINPAL_MERCHANT_ID'),
         'mode'         => env('ZARINPAL_MODE', 'sandbox'), // sandbox or normal
         'callback_url' => env('APP_URL') . '/company/payment/verify',
     ],
 
+    'company_manager' => [
+        'url'     => env('COMPANY_MANAGER_URL', 'http://localhost:8000'),
+        'api_key' => env('COMPANY_MANAGER_API_KEY'),
+    ],
 ];
