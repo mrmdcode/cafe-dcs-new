@@ -99,13 +99,9 @@ Route::prefix('order_recipient')->middleware(['auth', 'OrderRecipient'])->group(
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/subscription/required', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'showPaymentPage'])
-        ->name('subscription.required');
-
-    Route::post('/subscription/pay', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'requestPayment'])
-        ->name('subscription.pay');
-
-    Route::get('/subscription/callback', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'callback'])
-        ->name('subscription.callback');
+    Route::get('/subscription/required', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'showPaymentPage'])->name('subscription.required');
+    Route::post('/subscription/pay', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'requestPayment'])->name('subscription.pay');
+    Route::get('/subscription/callback', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'callback'])->name('subscription.callback');
+    Route::post('/subscription/webhook', [\App\Http\Controllers\Company\ManageSubscriptionController::class, 'webhook'])->name('subscription.webhook')->withoutMiddleware(['auth', 'auth:sanctum']);
 });
 Route::get('/{company_username}/check_order/{order_id}-{order_unique_key}', [\App\Http\Controllers\SiteLayoutsController::class, 'check_order'])->name('user.check_order');
