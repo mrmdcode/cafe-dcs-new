@@ -21,7 +21,7 @@ services:
     container_name: cafe_dcs_nginx_server
     restart: unless-stopped
     ports:
-      - "8003:80"
+      - "8001:80"
 
     volumes:
       - ./src:/var/www
@@ -50,7 +50,7 @@ services:
     container_name: cafe_dcs_phpmyadmin
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8083:80"
+      - "127.0.0.1:8081:80"
 
     environment:
       PMA_HOST: mysql
