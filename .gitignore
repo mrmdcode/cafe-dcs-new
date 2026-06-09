@@ -1,4 +1,4 @@
-# ─── Laravel ─────────────────────────────────────────────
+# Laravel
 /public/hot
 /public/storage
 /storage/*.key
@@ -8,7 +8,7 @@ auth.json
 npm-debug.log
 yarn-error.log
 
-# ─── Environment ─────────────────────────────────────────
+# Environment
 .env
 .env.backup
 .env.production
@@ -16,19 +16,19 @@ yarn-error.log
 !.env.docker
 !.env.example
 
-# ─── IDE ─────────────────────────────────────────────────
+# IDE
 /.fleet
 /.idea
 /.vscode
 
-# ─── NOT ignored (committed to git) ──────────────────────
+# NOT ignored (committed to git)
 # vendor/        ← committed because no internet on server
 # public/build/  ← committed because you use vite
 # node_modules/  ← still ignored, not needed on server
 /node_modules
 /.phpunit.cache
 
-# ─── Docker (at project root level) ──────────────────────
+# Docker (at project root level)
 # docker-compose.yml  ← NOT ignored, needed on server
 # Dockerfile          ← NOT ignored, needed on server
 *.bundle
