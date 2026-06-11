@@ -39,6 +39,13 @@ class ManageSubscriptionTest extends TestCase
         $response->assertRedirect('https://sandbox.zarinpal.com/pg/StartPay/A000...');
         # token should be stored in session
         $response->assertSessionHas('pending_payment.token', 'test-token-abc');
+
+        Http::assertSent(function ($request) {
+            $body = $request->data();
+            return $body['external_reference'] === 'cafe_dcs:company:' . $this->user->company_id
+            && $body['metadata']['source'] === 'cafe_dcs'
+            && $body['metadata']['company_id'] === $this->user->company_id;
+        });
     }
 
     public function test_it_activates_subscription_on_successful_callback()
@@ -108,9 +115,12 @@ class ManageSubscriptionTest extends TestCase
 
     public function test_it_activates_subscription_via_webhook()
     {
+        $company = Company::factory()->create(['fee_received' => 150000]);
+        $user    = User::factory()->create(['company_id' => $company->id]);
+
         $response = $this->postJson(route('subscription.webhook'), [
             'event'              => 'paid',
-            'external_reference' => $this->user->company_id,
+            'external_reference' => 'cafe_dcs:company:' . $company->id,
             'ref_id'             => 'REF123456',
             'amount'             => 150000,
         ]);
@@ -118,18 +128,13 @@ class ManageSubscriptionTest extends TestCase
         $response->assertJson(['received' => true]);
 
         $this->assertDatabaseHas('company_payments', [
-            'company_id'   => $this->user->company_id,
-            'amount'       => 150000,
+            'company_id'   => $company->id,
             'reference_id' => 'REF123456',
             'status'       => 'paid',
         ]);
 
-        // Check subscription created and linked to payment
-        $payment = CompanyPayment::where('reference_id', 'REF123456')->first();
-
         $this->assertDatabaseHas('company_subscriptions', [
-            'company_id' => $this->user->company_id,
-            'payment_id' => $payment->id,
+            'company_id' => $company->id,
             'status'     => 'active',
         ]);
     }

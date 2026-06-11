@@ -50,12 +50,19 @@ class ManageSubscriptionController extends Controller
         ])->withOptions([
             'verify' => false,
         ])->post(config('services.company_manager.url') . '/api/payments/initiate', [
-            'company_id'   => $user->company_id,
-            'amount'       => $amount,
-            'description'  => $description,
-            'callback_url' => route('subscription.callback'),
-            'mobile'       => $user->mobile ?? null,
-            'email'        => $user->email ?? null,
+            'amount'             => $amount,
+            'description'        => $description,
+            'callback_url'       => route('subscription.callback'),
+            'external_reference' => 'cafe_dcs:company:' . $user->company_id,
+            'mobile'             => $user->mobile ?? null,
+            'email'              => $user->email ?? null,
+            'metadata'           => [
+                'source'       => 'cafe_dcs',
+                'company_id'   => $user->company_id,
+                'company_name' => $company->name,
+                'user_id'      => $user->id,
+                'reason'       => 'monthly_subscription',
+            ],
         ]);
 
         if (! $response->successful() || ! $response->json('success')) {
@@ -140,7 +147,10 @@ class ManageSubscriptionController extends Controller
     public function webhook(Request $request)
     {
         if ($request->event === 'paid') {
-            $company = Company::where('id', $request->external_reference)->first();
+            // external_reference format: "cafe_dcs:company:42"
+            $externalRef = $request->external_reference;
+            $companyId   = last(explode(':', $externalRef));
+            $company     = Company::find($companyId);
 
             if (! $company) {
                 return response()->json(['error' => 'Company not found'], 404);
