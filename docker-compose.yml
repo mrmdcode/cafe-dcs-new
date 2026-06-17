@@ -1,3 +1,5 @@
+name: cafe-dcs-app
+
 services:
 
   app:
@@ -67,3 +69,4 @@ networks:
 
 volumes:
   mysql-data:
+    name: cafe-dcs-v2_mysql-data
