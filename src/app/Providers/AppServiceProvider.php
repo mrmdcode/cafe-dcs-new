@@ -1,6 +1,8 @@
 <?php
 namespace App\Providers;
 
+use App\Domain\Payments\Contracts\PaymentProvider;
+use App\Domain\Payments\Providers\PrestivaPaymentProvider;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -10,7 +12,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(PaymentProvider::class, fn() => new PrestivaPaymentProvider(
+            baseUrl: config('payments.base_url'),
+            apiKey: config('payments.api_key'),
+        ));
     }
 
     /**

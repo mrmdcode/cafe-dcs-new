@@ -41,9 +41,4 @@ return [
         'mode'         => env('ZARINPAL_MODE', 'sandbox'), // sandbox or normal
         'callback_url' => env('APP_URL') . '/company/payment/verify',
     ],
-
-    'company_manager' => [
-        'url'     => env('COMPANY_MANAGER_URL', 'http://localhost:8000'),
-        'api_key' => env('COMPANY_MANAGER_API_KEY'),
-    ],
 ];
