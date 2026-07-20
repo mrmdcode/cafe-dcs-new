@@ -1,7 +1,9 @@
 <?php
 namespace App\Exceptions;
 
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -43,13 +45,18 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
-        $this->reportable(function (Throwable $e) {
-            //
-        });
+        //
     }
 
     public function render($request, Throwable $e)
     {
+        // Validation failures (e.g. wrong login credentials) and auth redirects
+        // must keep Laravel's default handling (redirect back with errors),
+        // not be swallowed into a generic 500 page.
+        if ($e instanceof ValidationException || $e instanceof AuthenticationException) {
+            return parent::render($request, $e);
+        }
+
         // 404 Page not found
         if ($e instanceof NotFoundHttpException) {
             return response()->view('errors.404', [], 404);
