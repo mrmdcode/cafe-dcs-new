@@ -66,6 +66,7 @@ services:
 networks:
   app-network:
     driver: bridge
+    enable_ipv6: false
 
 volumes:
   mysql-data:
