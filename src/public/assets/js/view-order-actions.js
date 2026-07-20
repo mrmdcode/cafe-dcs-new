@@ -287,6 +287,63 @@
         });
     }
 
+    // Cancel (delete) the order
+    function cancelOrder() {
+        if (!currentOrder) return;
+
+        var id = currentOrder.id;
+        var unique_key = currentOrder.unique_key;
+
+        Swal.fire({
+            title: 'آیا از لغو فاکتور ' + unique_key + '-' + id + ' اطمینان دارید؟',
+            input: 'text',
+            inputPlaceholder: 'دلیل لغو (اختیاری)',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'لغو سفارش !',
+            cancelButtonText: 'انصراف'
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            fetch('/api/company/orders/cancel/' + id, {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCsrfToken()
+                },
+                body: JSON.stringify({ reason: result.value || null })
+            })
+                .then(function (r) {
+                    if (!r.ok) return r.json().then(function (d) { throw d; });
+                    return r.json();
+                })
+                .then(function () {
+                    Swal.fire({
+                        position: 'top-end',
+                        title: 'سفارش لغو شد .',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(function () {
+                        location.reload();
+                    });
+                })
+                .catch(function (err) {
+                    Swal.fire({
+                        position: 'top-end',
+                        icon: 'error',
+                        title: (typeof err === 'string' ? err : (err.message || 'خطایی رخ داد')),
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                });
+        });
+    }
+
     // Fetch order and open modal
     function openOrderModal(orderId) {
         fetch('/api/company/orders/' + orderId, {
@@ -337,6 +394,7 @@
         btnPrint.addEventListener('click', printOrder);
         btnPaid.addEventListener('click', paying);
         btnFinish.addEventListener('click', finishing);
+        btnDelete.addEventListener('click', cancelOrder);
     });
 
 }());

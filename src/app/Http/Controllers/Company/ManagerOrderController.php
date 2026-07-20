@@ -98,6 +98,8 @@ class ManagerOrderController extends Controller
      */
     public function show(Order $order): JsonResponse
     {
+        $this->authorizeCompany($order);
+
         $order->load(['table', 'customer', 'order_recipient', 'menu_item' => fn($q) => $q->withTrashed()]);
 
         return response()->json($order);
@@ -109,6 +111,8 @@ class ManagerOrderController extends Controller
      */
     public function edit(Order $order)
     {
+        $this->authorizeCompany($order);
+
         // Load relationships needed for the form
         $order->loadMissing([
             'customer',
@@ -184,6 +188,8 @@ class ManagerOrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
+        $this->authorizeCompany($order);
+
         $validated = $request->validate([
             'customer_name'       => 'nullable|string|max:255',
             'customer_phone'      => 'nullable|string|max:255',
@@ -220,12 +226,14 @@ class ManagerOrderController extends Controller
         $order->menu_item()->sync($syncData);
 
         return redirect()
-            ->route('company.cashier.orders.index')
+            ->route('company.order.index')
             ->with('success', 'سفارش بروزرسانی شد');
     }
 
     public function updateStatus(Request $request, Order $order)
     {
+        $this->authorizeCompany($order);
+
         $validated = $request->validate([
             'status' => ['required', new Enum(OrderStatus::class)],
         ]);
@@ -239,6 +247,24 @@ class ManagerOrderController extends Controller
             'message' => 'وضعیت سفارش بروزرسانی شد',
             'status'  => $order->status,
         ]);
+    }
+
+    public function destroy(Request $request, Order $order): JsonResponse
+    {
+        $this->authorizeCompany($order);
+
+        $order->update([
+            'status'             => OrderStatus::Cancelled,
+            'delete_description' => $request->input('reason'),
+        ]);
+        $order->delete();
+
+        return response()->json(['message' => 'سفارش لغو شد.']);
+    }
+
+    private function authorizeCompany(Order $order): void
+    {
+        abort_if($order->company_id !== auth()->user()->company_id, 403);
     }
 
     public function showFactor(string $id, string $unique_key)

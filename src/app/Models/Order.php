@@ -24,6 +24,7 @@ class Order extends Model
         'discount',
         'waiter_time',
         'cashier_time',
+        'delete_description',
 
     ];
 

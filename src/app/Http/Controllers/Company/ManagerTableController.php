@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Company;
 
 use App\Http\Controllers\Controller;
-use App\Models\Printer;
 use App\Models\Table;
 use Faker\Factory as Faker;
 use Illuminate\Http\Request;
@@ -52,8 +51,8 @@ class ManagerTableController extends Controller
         $table = Table::where('id',$id)->first();
         if (is_null($table)){
             session()->flash('status','error');
-            session()->flash('message','پرینتر وجود ندارد به پشتیبانی اطلاع دهید .');
-            return redirect()->route('company.printer.index');
+            session()->flash('message','میز وجود ندارد به پشتیبانی اطلاع دهید .');
+            return redirect()->route('company.table.index');
         }
         if ($table->company_id != auth()->user()->company_id){
             session()->flash('status','error');
@@ -96,7 +95,7 @@ class ManagerTableController extends Controller
      */
     public function destroy(string $id)
     {
-        $table = Printer::where('id',$id)->first();
+        $table = Table::where('id',$id)->first();
         if (is_null($table)){
             session()->flash('status','error');
             session()->flash('message','میز وجود ندارد به پشتیبانی اطلاع دهید .');

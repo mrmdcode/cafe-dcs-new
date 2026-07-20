@@ -15,8 +15,9 @@ class ManagerPrinterController extends Controller
      */
     public function index()
     {
-        $printers  = Printer::where('company_id', auth()->user()->company_id)->get();
-        return view('dashboard.company.manager.printers', compact('printers'));
+        $printers = Printer::where('company_id', auth()->user()->company_id)->get();
+        $planPrinterControl = auth()->user()->company->plan_printer_control;
+        return view('dashboard.company.manager.printers', compact('printers', 'planPrinterControl'));
     }
 
     /**
@@ -65,6 +66,8 @@ class ManagerPrinterController extends Controller
      */
     public function update(Request $request, Printer $printer): JsonResponse
     {
+        abort_if($printer->company_id !== auth()->user()->company_id, 403);
+
         $validator = Validator::make($request->all(), [
             'name'          => 'required|string|max:255',
             'local_address' => 'required|string|max:255',
@@ -92,6 +95,8 @@ class ManagerPrinterController extends Controller
      */
     public function destroy(Printer $printer)
     {
+        abort_if($printer->company_id !== auth()->user()->company_id, 403);
+
         $printer->delete();
         return $this->redirectWithStatus('success', 'پرینتر با موفقیت حذف شد.');
     }

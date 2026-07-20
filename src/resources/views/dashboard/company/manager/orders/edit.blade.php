@@ -1,15 +1,15 @@
 @extends('Layouts.app')
 @section('aside_menu')
-    @include('dashboard.company.cashier._partial._menu')
+    @include('dashboard.company.manager._partial._menu')
 @endsection
 @section('top_menu')
-    @include('dashboard.company.cashier._partial._topMenu')
+    @include('dashboard.company.manager._partial._topMenu')
 @endsection
 @section('content')
     <div class="container mt-4">
         <h4>ویرایش سفارش #{{ $order->id }}</h4>
 
-        <form method="POST" action="{{ route('company.cashier.orders.update', $order) }}">
+        <form method="POST" action="{{ route('company.order.update', $order) }}">
             @csrf
             @method('PATCH')
 

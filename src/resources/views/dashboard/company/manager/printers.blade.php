@@ -17,6 +17,40 @@
             </div>
             @endif
 
+            <div class="card mb-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">اتصال به QZ Tray</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            پرینتر صندوق تعریف شده است
+                            @if($printers->where('cashier', true)->count())
+                                <span class="badge bg-success">✓ فعال</span>
+                            @else
+                                <span class="badge bg-danger">✗ تعریف نشده</span>
+                            @endif
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            پلن پرینت مستقیم فعال است
+                            @if($planPrinterControl)
+                                <span class="badge bg-success">✓ فعال</span>
+                            @else
+                                <span class="badge bg-secondary">✗ غیرفعال</span>
+                            @endif
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            اتصال به نرم‌افزار QZ Tray
+                            <span id="qz-status-badge" class="badge bg-secondary">بررسی نشده</span>
+                        </li>
+                    </ul>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="qz-check-btn">
+                        بررسی اتصال
+                    </button>
+                    <div id="qz-check-result" class="mt-2"></div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <h4>پرینتر ها</h4>
@@ -129,7 +163,33 @@
 @endsection
 
 @section('js')
+<script src="{{ asset('/assets/js/qz-tray.js') }}"></script>
+<script src="{{ asset('/assets/js/printer-connection.js') }}"></script>
 <script>
+    // Test QZ Tray connection
+    $('#qz-check-btn').on('click', function () {
+        const $btn = $(this);
+        const $badge = $('#qz-status-badge');
+        const $result = $('#qz-check-result');
+
+        $btn.prop('disabled', true).text('در حال بررسی...');
+        $badge.removeClass('bg-success bg-danger bg-secondary').addClass('bg-secondary').text('در حال بررسی...');
+        $result.html('');
+
+        window.QZPrinter.getConnection()
+            .then(function (printerName) {
+                $badge.removeClass('bg-secondary bg-danger').addClass('bg-success').text('متصل ✓');
+                $result.html('<div class="alert alert-success mb-0">اتصال برقرار شد. پرینتر شناسایی‌شده: <code>' + printerName + '</code></div>');
+            })
+            .catch(function (err) {
+                $badge.removeClass('bg-secondary bg-success').addClass('bg-danger').text('خطا در اتصال');
+                $result.html('<div class="alert alert-danger mb-0">' + (typeof err === 'string' ? err : (err.message || 'خطای نامشخص')) + '</div>');
+            })
+            .finally(function () {
+                $btn.prop('disabled', false).text('بررسی اتصال');
+            });
+    });
+
     // Reset form for create mode
     function resetForm() {
         $('#printerModalLabel').text('افزودن پرینتر');

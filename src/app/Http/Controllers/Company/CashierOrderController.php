@@ -90,6 +90,8 @@ class CashierOrderController extends Controller
      */
     public function show(Order $order): JsonResponse
     {
+        $this->authorizeCompany($order);
+
         $order->load(['table', 'customer', 'order_recipient', 'menu_item' => fn($q) => $q->withTrashed()]);
 
         return response()->json($order);
@@ -101,6 +103,8 @@ class CashierOrderController extends Controller
      */
     public function edit(Order $order)
     {
+        $this->authorizeCompany($order);
+
         // Load relationships needed for the form
         $order->loadMissing([
             'customer',
@@ -121,6 +125,8 @@ class CashierOrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
+        $this->authorizeCompany($order);
+
         $validated = $request->validate([
             'customer_name'       => 'nullable|string|max:255',
             'customer_phone'      => 'nullable|string|max:255',
@@ -163,6 +169,8 @@ class CashierOrderController extends Controller
 
     public function updateStatus(Request $request, Order $order)
     {
+        $this->authorizeCompany($order);
+
         $validated = $request->validate([
             'status' => ['required', new Enum(OrderStatus::class)],
         ]);
@@ -176,5 +184,10 @@ class CashierOrderController extends Controller
             'message' => 'وضعیت سفارش بروزرسانی شد',
             'status'  => $order->status,
         ]);
+    }
+
+    private function authorizeCompany(Order $order): void
+    {
+        abort_if($order->company_id !== auth()->user()->company_id, 403);
     }
 }
